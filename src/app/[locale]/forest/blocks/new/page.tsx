@@ -39,7 +39,7 @@ function ForestBlockNew() {
   });
 
   function onSubmit(values: FormValues) {
-    createBlock.mutate({ data: { ...values, total_area_ha: parseFloat(values.total_area_ha) } }, {
+    createBlock.mutate({ data: values }, {
       onSuccess: () => {
         toast({ title: t("toastCreated") });
         queryClient.invalidateQueries({ queryKey: ["/api/v1/forest/blocks/"] });

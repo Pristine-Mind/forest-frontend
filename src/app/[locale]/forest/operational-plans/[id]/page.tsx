@@ -78,11 +78,11 @@ function OperationalPlanDetail({
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Created</p>
-                  <p>{new Date(data.created_at).toLocaleString()}</p>
+                  <p>{data.created_at ? new Date(data.created_at).toLocaleString() : "N/A"}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
-                  <p>{new Date(data.updated_at).toLocaleString()}</p>
+                  <p>{data.updated_at ? new Date(data.updated_at).toLocaleString() : "N/A"}</p>
                 </div>
               </CardContent>
             </Card>

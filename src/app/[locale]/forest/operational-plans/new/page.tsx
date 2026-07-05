@@ -29,7 +29,7 @@ function NewOperationalPlan() {
         data: {
           valid_from: data.valid_from,
           valid_to: data.valid_to,
-          approved_harvest_limit: parseFloat(data.approved_harvest_limit),
+          approved_harvest_limit: data.approved_harvest_limit,
           description: data.description,
         },
       });

@@ -44,7 +44,7 @@ function PoleCountDetail({
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">
-                {data.species_name} - Plot {data.plot_number}, Tree {data.tree_number}
+                {data.species_name}
               </h1>
               <p className="text-muted-foreground mt-2">Block: {data.block_name}</p>
             </div>
