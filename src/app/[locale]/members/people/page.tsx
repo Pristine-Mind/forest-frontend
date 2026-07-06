@@ -6,6 +6,7 @@ import { useListMembers } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@/i18n/routing";
 
 function PeopleList() {
   const t = useTranslations("members.people");
@@ -32,8 +33,12 @@ function PeopleList() {
               </TableHeader>
               <TableBody>
                 {data?.results.map(m => (
-                  <TableRow key={m.id}>
-                    <TableCell className="font-medium">{m.full_name}</TableCell>
+                  <TableRow key={m.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
+                    <TableCell className="font-medium">
+                      <Link href={`/members/people/${m.id}`} className="hover:underline text-blue-600">
+                        {m.full_name}
+                      </Link>
+                    </TableCell>
                     <TableCell>{m.household_name}</TableCell>
                     <TableCell>{m.citizenship_no}</TableCell>
                     <TableCell><Badge variant={m.membership_status === "active" ? "default" : "secondary"}>{m.membership_status}</Badge></TableCell>

@@ -124,6 +124,7 @@ function MemberDetail({ id }: { id: number }) {
                     <TableHead>{t("tableType")}</TableHead>
                     <TableHead>{t("tableJoined")}</TableHead>
                     <TableHead>{t("tableStatus")}</TableHead>
+                    <TableHead>{t("tableActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -138,11 +139,16 @@ function MemberDetail({ id }: { id: number }) {
                           {m.membership_status}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/members/people/${m.id}`}>{t("view")}</Link>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                   {(!members?.results || members.results.length === 0) && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-6 text-muted-foreground">
                         {t("emptyMembers")}
                       </TableCell>
                     </TableRow>

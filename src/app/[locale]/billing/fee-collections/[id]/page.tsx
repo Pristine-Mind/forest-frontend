@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
@@ -47,13 +48,33 @@ function FeeCollectionDetail({ id }: { id: number }) {
   const formSchema = z.object({
     amount_paid: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) >= 0, tForms("required")),
     description: z.string().optional(),
-  });
+    payment_type: z.enum(["cash", "cheque", "digital_wallet"]).default("cash"),
+    cheque_number: z.string().optional(),
+    cheque_bank_name: z.string().optional(),
+  }).refine(
+    (data) => {
+      if (data.payment_type === "cheque") {
+        return data.cheque_number && data.cheque_number.trim() !== "" && data.cheque_bank_name && data.cheque_bank_name.trim() !== "";
+      }
+      return true;
+    },
+    {
+      message: "Cheque number and bank name are required for cheque payments",
+      path: ["cheque_number"],
+    }
+  );
 
   type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { amount_paid: "", description: "" },
+    defaultValues: { 
+      amount_paid: "", 
+      description: "",
+      payment_type: "cash",
+      cheque_number: "",
+      cheque_bank_name: "",
+    },
   });
 
   useEffect(() => {
@@ -61,6 +82,9 @@ function FeeCollectionDetail({ id }: { id: number }) {
       form.reset({
         amount_paid: fee.amount_paid,
         description: fee.description ?? "",
+        payment_type: (fee as any).payment_type ?? "cash",
+        cheque_number: (fee as any).cheque_number ?? "",
+        cheque_bank_name: (fee as any).cheque_bank_name ?? "",
       });
     }
   }, [fee, form]);
@@ -75,6 +99,9 @@ function FeeCollectionDetail({ id }: { id: number }) {
         data: {
           amount_paid: values.amount_paid,
           description: values.description || undefined,
+          payment_type: values.payment_type,
+          cheque_number: values.payment_type === "cheque" ? values.cheque_number : undefined,
+          cheque_bank_name: values.payment_type === "cheque" ? values.cheque_bank_name : undefined,
         },
       },
       {
@@ -158,6 +185,50 @@ function FeeCollectionDetail({ id }: { id: number }) {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="payment_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("paymentType") || "Payment Type"}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="cash">{t("paymentTypeCash") || "Cash"}</SelectItem>
+                          <SelectItem value="cheque">{t("paymentTypeCheque") || "Cheque"}</SelectItem>
+                          <SelectItem value="digital_wallet">{t("paymentTypeDigitalWallet") || "Digital Wallet"}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch("payment_type") === "cheque" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="cheque_number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("chequeNumber") || "Cheque Number"}</FormLabel>
+                          <FormControl><Input placeholder="e.g. CHQ-123456" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="cheque_bank_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("chequeBankName") || "Bank Name"}</FormLabel>
+                          <FormControl><Input placeholder="e.g. ABC Bank" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
                 <Button type="submit" disabled={updateFee.isPending}>
                   {updateFee.isPending ? t("saving") : t("saveChanges")}
                 </Button>

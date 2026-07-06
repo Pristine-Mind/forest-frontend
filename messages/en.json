@@ -207,7 +207,10 @@
       "notFound": "Fee collection not found.",
       "statusPaid": "Paid",
       "statusDue": "Due",
-      "statusPartial": "Partial"
+      "statusPartial": "Partial",
+      "paymentTypeCash": "Cash",
+      "paymentTypeCheque": "Cheque",
+      "paymentTypeDigitalWallet": "Digital Wallet"
     },
     "receipts": {
       "title": "Receipts",
@@ -899,6 +902,15 @@
     "tableJoined": "Joined",
     "emptyMembers": "No members added yet.",
     "notFound": "Household not found.",
+    "errorLoading": "Error loading member details",
+    "backToList": "Back to Members",
+    "joinedOn": "Joined on {date}",
+    "memberInfo": "Member Information",
+    "householdInfo": "Household Information",
+    "filed": "Filed",
+    "received": "Received",
+    "entries": "Entries",
+    "programs": "Programs",
     "people": {
       "title": "People",
       "subtitle": "All registered individuals in the CFUG.",

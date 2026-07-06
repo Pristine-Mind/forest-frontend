@@ -1,5 +1,6 @@
 "use client";
-
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -25,14 +26,30 @@ export default function FormsPage() {
       href: `/${locale}/forms/cutting`,
       color: "bg-green-50",
     },
+    {
+      title: "Felling Registers",
+      description: "Create and manage felling registers with multiple felling items",
+      icon: Clipboard,
+      href: `/${locale}/forms/felling-register`,
+      color: "bg-yellow-50",
+    },
+    {
+      title: "Forest Product Receipts",
+      description: "Create and manage forest product receipts with multiple receipt items",
+      icon: Clipboard,
+      href: `/${locale}/forms/forest-product-receipts`,
+      color: "bg-purple-50",
+    },
   ];
 
   return (
+    <AuthGuard>
+      <AppLayout>
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Forms Management</h1>
         <p className="text-gray-600 mt-2">
-          Create and manage survey forms and cutting registers with nested items support
+          Create and manage survey forms, cutting registers, and felling registers with nested items support
         </p>
       </div>
 
@@ -64,5 +81,7 @@ export default function FormsPage() {
         })}
       </div>
     </div>
+      </AppLayout>
+    </AuthGuard>
   );
 }

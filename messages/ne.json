@@ -207,7 +207,10 @@
       "notFound": "शुल्क सङ्कलन भेटिएन।",
       "statusPaid": "तिरिएको",
       "statusDue": "बाँकी",
-      "statusPartial": "आंशिक"
+      "statusPartial": "आंशिक",
+      "paymentTypeCash": "नगद",
+      "paymentTypeCheque": "चेक",
+      "paymentTypeDigitalWallet": "डिजिटल वालेट"
     },
     "receipts": {
       "title": "रसिदहरू",
@@ -899,6 +902,15 @@
     "tableJoined": "सामेल भएको",
     "emptyMembers": "अझै कुनै सदस्य थपिएको छैन।",
     "notFound": "घरधुरी भेटिएन।",
+    "errorLoading": "सदस्य विवरण लोड गर्न त्रुटि",
+    "backToList": "सदस्यहरूमा फर्किनुहोस्",
+    "joinedOn": "{date} मा सामेल भएको",
+    "memberInfo": "सदस्य जानकारी",
+    "householdInfo": "घरधुरी जानकारी",
+    "filed": "दर्ता गरिएको",
+    "received": "प्राप्त",
+    "entries": "प्रविष्टिहरू",
+    "programs": "कार्यक्रमहरू",
     "people": {
       "title": "व्यक्तिहरू",
       "subtitle": "CFUG मा दर्ता गरिएका सबै व्यक्तिहरू।",

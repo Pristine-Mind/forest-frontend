@@ -1,8 +1,8 @@
 "use client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +33,7 @@ import {
   type VisitorFeeRate,
   type FundAllocationRule,
   type BankAccount,
+  customFetch,
 } from "@/lib/api";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -69,7 +70,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Settings2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Settings2, Trees } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 // ─── Price Rate Form ────────────────────────────────────────────────────────
@@ -202,8 +203,6 @@ function PriceRateForm({
     </Form>
   );
 }
-
-// ─── Price Rates Tab ────────────────────────────────────────────────────────
 
 function PriceRatesTab({ canWrite }: { canWrite: boolean }) {
   const queryClient = useQueryClient();
@@ -1185,6 +1184,222 @@ function BankAccountForm({
   );
 }
 
+
+type GeoJsonGeometry = {
+  type: string;
+  coordinates: any;
+};
+
+type GeoJsonFeature = {
+  type: string;
+  properties: Record<string, unknown>;
+  geometry: GeoJsonGeometry;
+};
+
+type GeoJsonFeatureCollection = {
+  type: string;
+  features: GeoJsonFeature[];
+};
+
+// Adjust this if the forest API is served from a different host/port, or set
+// NEXT_PUBLIC_FOREST_BOUNDARIES_URL in your env to override it.
+const BOUNDARIES_GEOJSON_URL =
+  process.env.NEXT_PUBLIC_FOREST_BOUNDARIES_URL ??
+  "http://localhost:8005/api/v1/forest/boundaries/geojson/";
+
+async function fetchBoundariesGeoJson(): Promise<GeoJsonFeatureCollection> {
+  return customFetch<GeoJsonFeatureCollection>(BOUNDARIES_GEOJSON_URL, {
+    responseType: "json",
+  });
+}
+
+function useForestBoundariesGeoJson() {
+  return useQuery({
+    queryKey: ["forest-boundaries-geojson"],
+    queryFn: fetchBoundariesGeoJson,
+    staleTime: 60_000,
+  });
+}
+
+function ringForGeometry(geometry: GeoJsonGeometry | undefined) {
+  if (!geometry) return null;
+  if (geometry.type === "Polygon") return geometry.coordinates?.[0] ?? null;
+  if (geometry.type === "MultiPolygon") return geometry.coordinates?.[0]?.[0] ?? null;
+  return null;
+}
+
+function vertexCount(geometry: GeoJsonGeometry | undefined) {
+  return ringForGeometry(geometry)?.length ?? 0;
+}
+
+function formatCellValue(value: unknown) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "number") return value.toLocaleString();
+  return String(value);
+}
+
+function BoundariesTab() {
+  const { data, isLoading, isFetching, isError, error, refetch } = useForestBoundariesGeoJson();
+  const [search, setSearch] = useState("");
+  const [selectedBoundaryIdx, setSelectedBoundaryIdx] = useState<number | null>(null);
+
+  const features = data?.features ?? [];
+
+  const columns = useMemo(() => {
+    const keys = new Set<string>();
+    features.slice(0, 25).forEach((f) => {
+      Object.keys(f.properties ?? {}).forEach((k) => keys.add(k));
+    });
+    return Array.from(keys);
+  }, [features]);
+
+  const filteredFeatures = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return features;
+    return features.filter((f) =>
+      columns.some((c) => String(f.properties?.[c] ?? "").toLowerCase().includes(q)),
+    );
+  }, [features, columns, search]);
+
+  const selectedFeature = selectedBoundaryIdx !== null ? filteredFeatures[selectedBoundaryIdx] : null;
+  const selectedCoordinates = useMemo(() => {
+    if (!selectedFeature?.geometry) return [];
+    const ring = ringForGeometry(selectedFeature.geometry);
+    return ring ? ring.map((coord: any) => ({ lng: coord[0] as number, lat: coord[1] as number })) : [];
+  }, [selectedFeature]);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-4 flex-wrap">
+        <div>
+          <CardTitle>Forest Boundaries</CardTitle>
+          <CardDescription>
+            Boundary polygons fetched from the forest GeoJSON feed.
+          </CardDescription>
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Filter boundaries…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-52"
+            data-testid="input-boundaries-search"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            data-testid="button-refresh-boundaries"
+          >
+            {isFetching ? "Refreshing..." : "Refresh"}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        ) : isError ? (
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            Could not load boundaries: {(error as Error)?.message ?? "Unknown error"}. Check
+            that the forest API is running and reachable, and that it allows requests from
+            this origin (CORS).
+          </div>
+        ) : filteredFeatures.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            {features.length === 0
+              ? "No boundaries returned by the endpoint."
+              : "No boundaries match your filter."}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {columns.map((c) => (
+                      <TableHead key={c} className="whitespace-nowrap">
+                        {c}
+                      </TableHead>
+                    ))}
+                    <TableHead>Geometry</TableHead>
+                    <TableHead>Vertices</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFeatures.map((f, idx) => (
+                    <TableRow
+                      key={String(f.properties?.id ?? idx)}
+                      data-testid={`row-boundary-${idx}`}
+                      className={selectedBoundaryIdx === idx ? "bg-muted" : ""}
+                    >
+                      {columns.map((c) => (
+                        <TableCell key={c} className="whitespace-nowrap">
+                          {formatCellValue(f.properties?.[c])}
+                        </TableCell>
+                      ))}
+                      <TableCell>
+                        <Badge variant="outline">{f.geometry?.type ?? "Unknown"}</Badge>
+                      </TableCell>
+                      <TableCell>{vertexCount(f.geometry)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedBoundaryIdx(selectedBoundaryIdx === idx ? null : idx)}
+                          data-testid={`button-view-coordinates-${idx}`}
+                        >
+                          {selectedBoundaryIdx === idx ? "Hide" : "View"} Coordinates
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {selectedFeature && selectedCoordinates.length > 0 && (
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4">
+                  Coordinates for {String(selectedFeature.properties?.name ?? "Boundary")}
+                </h3>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Point #</TableHead>
+                        <TableHead>Longitude</TableHead>
+                        <TableHead>Latitude</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCoordinates.map((coord: { lng: number; lat: number }, idx: number) => (
+                        <TableRow key={idx} data-testid={`row-coordinate-${idx}`}>
+                          <TableCell className="font-medium">{idx + 1}</TableCell>
+                          <TableCell className="font-mono text-sm">{coord.lng.toFixed(6)}</TableCell>
+                          <TableCell className="font-mono text-sm">{coord.lat.toFixed(6)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <p className="text-xs text-muted-foreground mt-4">
+                  Total coordinates: {selectedCoordinates.length}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main Settings Page ──────────────────────────────────────────────────────
 
 function Settings() {
@@ -1200,7 +1415,7 @@ function Settings() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
           <p className="text-muted-foreground mt-1">
-            Configure price rates, visitor fees, fund allocation rules, and bank accounts.
+            Configure price rates, visitor fees, fund allocation rules, bank accounts, and view forest boundaries.
           </p>
         </div>
       </div>
@@ -1212,11 +1427,14 @@ function Settings() {
       )}
 
       <Tabs defaultValue="price-rates">
-        <TabsList className="grid w-full grid-cols-4" data-testid="settings-tabs">
+        <TabsList className="grid w-full grid-cols-5" data-testid="settings-tabs">
           <TabsTrigger value="price-rates" data-testid="tab-price-rates">Price Rates</TabsTrigger>
           <TabsTrigger value="visitor-fees" data-testid="tab-visitor-fees">Visitor Fees</TabsTrigger>
           <TabsTrigger value="fund-allocation" data-testid="tab-fund-allocation">Fund Allocation</TabsTrigger>
           <TabsTrigger value="bank-accounts" data-testid="tab-bank-accounts">Bank Accounts</TabsTrigger>
+          <TabsTrigger value="boundaries" data-testid="tab-boundaries">
+            <Trees className="h-4 w-4 mr-1" /> Boundaries
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="price-rates" className="mt-6">
@@ -1233,6 +1451,10 @@ function Settings() {
 
         <TabsContent value="bank-accounts" className="mt-6">
           <BankAccountsTab canWrite={canWrite} />
+        </TabsContent>
+
+        <TabsContent value="boundaries" className="mt-6">
+          <BoundariesTab />
         </TabsContent>
       </Tabs>
     </div>

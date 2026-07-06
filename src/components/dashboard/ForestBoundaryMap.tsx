@@ -26,7 +26,7 @@ export function ForestBoundaryMap() {
 
   return (
     <div className="h-[420px] w-full overflow-hidden rounded-lg border">
-      <MapContainer center={center} zoom={13} scrollWheelZoom={false} className="h-full w-full">
+      <MapContainer center={center} zoom={12} scrollWheelZoom={false} className="h-full w-full">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
