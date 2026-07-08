@@ -6,7 +6,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useCreateHousehold } from "@/lib/api";
+import {
+  useCreateHousehold,
+  type HouseholdInput,
+  type MembershipStatus,
+  type MembershipType,
+  type EntryFeeType,
+  type WealthClass,
+  type HouseholdStatus,
+  type EducationLevel,
+} from "@/lib/api/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +36,11 @@ function MemberNew() {
   const formSchema = z.object({
     household_head_name: z.string().min(1, tForms("required")),
     tole: z.string().optional(),
-    wealth_class: z.enum(["rich", "medium", "poor"]),
+    citizenship_no: z.string().min(1, tForms("required")),
+    wealth_class: z.enum(["rich", "medium", "poor"] as const),
+    membership_type: z.enum(["general", "lifetime", "institutional", "special", "other"] as const).default("general"),
+    membership_status: z.enum(["active", "inactive", "cancelled"] as const).default("active"),
+    date_joined: z.string().min(1, tForms("required")),
 
     population_male: z.coerce.number().int().min(0).default(0),
     population_female: z.coerce.number().int().min(0).default(0),
@@ -36,13 +49,14 @@ function MemberNew() {
     livestock_buffalo: z.coerce.number().int().min(0).default(0),
     livestock_goat: z.coerce.number().int().min(0).default(0),
 
-    education_level: z.enum(["illiterate", "basic", "secondary_plus"]).optional().or(z.literal("")),
+    education_level: z.enum(["illiterate", "basic", "secondary_plus"] as const).optional().or(z.literal("")),
     occupation: z.string().optional(),
     caste_ethnicity: z.string().optional(),
 
     registration_date: z.string().min(1, tForms("required")),
-    entry_fee_type: z.enum(["new_household", "split_household"]),
-    status: z.enum(["active", "inactive"]),
+    entry_fee_type: z.enum(["new_household", "split_household"] as const),
+    status: z.enum(["active", "inactive"] as const),
+    photo: z.instanceof(File).optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -52,7 +66,11 @@ function MemberNew() {
     defaultValues: {
       household_head_name: "",
       tole: "",
+      citizenship_no: "",
       wealth_class: "medium",
+      membership_type: "general",
+      membership_status: "active",
+      date_joined: new Date().toISOString().split("T")[0],
 
       population_male: 0,
       population_female: 0,
@@ -68,11 +86,34 @@ function MemberNew() {
       registration_date: new Date().toISOString().split("T")[0],
       entry_fee_type: "new_household",
       status: "active",
+      photo: undefined,
     },
   });
 
   function onSubmit(values: FormValues) {
-    createHousehold.mutate({ data: values }, {
+    const payload: HouseholdInput = {
+      household_head_name: values.household_head_name,
+      tole: values.tole,
+      citizenship_no: values.citizenship_no,
+      wealth_class: values.wealth_class as WealthClass,
+      membership_type: values.membership_type as MembershipType,
+      membership_status: values.membership_status as MembershipStatus,
+      date_joined: values.date_joined,
+      status: values.status as HouseholdStatus,
+      population_male: values.population_male,
+      population_female: values.population_female,
+      livestock_cattle: values.livestock_cattle,
+      livestock_buffalo: values.livestock_buffalo,
+      livestock_goat: values.livestock_goat,
+      education_level: values.education_level as EducationLevel | undefined,
+      occupation: values.occupation,
+      caste_ethnicity: values.caste_ethnicity,
+      registration_date: values.registration_date,
+      entry_fee_type: values.entry_fee_type as EntryFeeType,
+      photo: values.photo,
+    };
+
+    createHousehold.mutate(payload, {
       onSuccess: () => {
         toast({ title: t("toastCreated") });
         queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/"] });
@@ -83,7 +124,7 @@ function MemberNew() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("newTitle")}</h1>
         <p className="text-muted-foreground mt-2">{t("newSubtitle")}</p>
@@ -94,14 +135,68 @@ function MemberNew() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-              {/* Basic info */}
+              {/* Basic Info */}
               <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">Basic Information</h3>
                 <FormField control={form.control} name="household_head_name" render={({ field }) => (
                   <FormItem><FormLabel>{t("headOfHouseholdName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="citizenship_no" render={({ field }) => (
+                  <FormItem><FormLabel>Citizenship No.</FormLabel><FormControl><Input {...field} placeholder="e.g., 56789-2087-123456" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="tole" render={({ field }) => (
                   <FormItem><FormLabel>{t("toleSettlement")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+              </div>
+
+              {/* Membership Information */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">Membership Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="membership_type" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Membership Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="general">General</SelectItem>
+                          <SelectItem value="lifetime">Lifetime</SelectItem>
+                          <SelectItem value="institutional">Institutional</SelectItem>
+                          <SelectItem value="special">Special</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="membership_status" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Membership Status</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField control={form.control} name="date_joined" render={({ field }) => (
+                    <FormItem><FormLabel>Date Joined</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <FormField control={form.control} name="registration_date" render={({ field }) => (
+                    <FormItem><FormLabel>{t("registrationDate")}</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                </div>
+              </div>
+
+              {/* Household Status & Wealth */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">Household Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="wealth_class" render={({ field }) => (
                     <FormItem>
@@ -189,27 +284,39 @@ function MemberNew() {
                 )} />
               </div>
 
-              {/* Registration & Fee */}
+              {/* Entry Fee */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-muted-foreground">{t("registrationAndFee")}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="registration_date" render={({ field }) => (
-                    <FormItem><FormLabel>{t("registrationDate")}</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="entry_fee_type" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("entryFeeType")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="new_household">{t("entryFeeNew")}</SelectItem>
-                          <SelectItem value="split_household">{t("entryFeeSplit")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
+                <FormField control={form.control} name="entry_fee_type" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("entryFeeType")}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <SelectContent>
+                        <SelectItem value="new_household">{t("entryFeeNew")}</SelectItem>
+                        <SelectItem value="split_household">{t("entryFeeSplit")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+
+              {/* Photo */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-muted-foreground">Photo</h3>
+                <FormField control={form.control} name="photo" render={({ field: { value, onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Household Head Photo</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} {...field} />
+                        {value && <div className="text-sm text-muted-foreground">Selected: {value.name}</div>}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
 
               <div className="flex gap-4 pt-4">

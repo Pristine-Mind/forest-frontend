@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useGetMemberStats } from "@/lib/api-member-stats";
+import { useGetMemberStats } from "@/lib/api/members";
 import { use } from "react";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
@@ -79,12 +79,14 @@ function MemberDetailView({ id }: { id: number }) {
     );
   }
 
+  const membershipType = stats.membership_type || stats.household_details?.membership_type || "general";
+  const membershipStatus = stats.membership_status || stats.household_details?.membership_status || "active";
   const membershipTypeLabel =
-    stats.membership_type.charAt(0).toUpperCase() +
-    stats.membership_type.slice(1);
+    membershipType.charAt(0).toUpperCase() +
+    membershipType.slice(1);
   const membershipStatusLabel =
-    stats.membership_status.charAt(0).toUpperCase() +
-    stats.membership_status.slice(1);
+    membershipStatus.charAt(0).toUpperCase() +
+    membershipStatus.slice(1);
 
   return (
     <div className="space-y-6">
@@ -95,17 +97,17 @@ function MemberDetailView({ id }: { id: number }) {
             <h1 className="text-4xl font-bold tracking-tight">
               {stats.full_name}
             </h1>
-            <Badge className={getMembershipStatusColor(stats.membership_status)}>
+            <Badge className={getMembershipStatusColor(membershipStatus)}>
               {membershipStatusLabel}
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            Member ID: {stats.id} • Citizenship: {stats.citizenship_no}
+            Member ID: {stats.id} • Citizenship: {stats.citizenship_no || stats.household_details?.citizenship_no || "N/A"}
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             {t("joinedOn", {
-              date: formatDate(stats.date_joined),
-              defaultValue: `Joined on ${formatDate(stats.date_joined)}`,
+              date: formatDate(stats.date_joined || stats.household_details?.date_joined),
+              defaultValue: `Joined on ${formatDate(stats.date_joined || stats.household_details?.date_joined)}`,
             })}
           </p>
         </div>
@@ -161,7 +163,7 @@ function MemberDetailView({ id }: { id: number }) {
           <div>
             <h3 className="font-semibold mb-4">Personal Details</h3>
             <DetailRow label="Full Name" value={stats.full_name} />
-            <DetailRow label="Citizenship No" value={stats.citizenship_no} />
+            <DetailRow label="Citizenship No" value={stats.citizenship_no || stats.household_details?.citizenship_no || "N/A"} />
             <DetailRow label="Membership Type" value={membershipTypeLabel} />
             <DetailRow label="Fee Tier" value={stats.current_fee_tier} />
             {stats.user_email && (
@@ -169,7 +171,7 @@ function MemberDetailView({ id }: { id: number }) {
             )}
             <DetailRow
               label="Member Since"
-              value={formatDate(stats.date_joined)}
+              value={formatDate(stats.date_joined || stats.household_details?.date_joined)}
             />
           </div>
           <div>
@@ -298,14 +300,14 @@ function MemberDetailView({ id }: { id: number }) {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MemberActivityChart stats={stats} />
-        <FinancialPerformanceChart stats={stats} />
+        <MemberActivityChart stats={stats as any} />
+        <FinancialPerformanceChart stats={stats as any} />
       </div>
 
-      <HouseholdCompositionChart stats={stats} />
+      <HouseholdCompositionChart stats={stats as any} />
 
       {stats.harvest_requests_count > 0 && (
-        <HarvestStatusChart stats={stats} />
+        <HarvestStatusChart stats={stats as any} />
       )}
 
       {/* Additional Statistics */}

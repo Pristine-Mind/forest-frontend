@@ -120,24 +120,19 @@ function MemberDetail({ id }: { id: number }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("tableName")}</TableHead>
-                    <TableHead>{t("tableCitizenshipNo")}</TableHead>
-                    <TableHead>{t("tableType")}</TableHead>
-                    <TableHead>{t("tableJoined")}</TableHead>
-                    <TableHead>{t("tableStatus")}</TableHead>
-                    <TableHead>{t("tableActions")}</TableHead>
+                    <TableHead>Photo</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {members?.results.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.full_name}</TableCell>
-                      <TableCell>{m.citizenship_no}</TableCell>
-                      <TableCell>{m.membership_type ?? m.membership_type}</TableCell>
-                      <TableCell>{formatDate(m.date_joined)}</TableCell>
                       <TableCell>
-                        <Badge variant={m.membership_status === "active" ? "default" : "secondary"} className="capitalize">
-                          {m.membership_status}
-                        </Badge>
+                        {m.member_photo ? (
+                          <img src={m.member_photo} alt={m.full_name} className="w-12 h-12 rounded-full object-cover" />
+                        ) : (
+                          <span className="text-muted-foreground">No Photo</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Button variant="outline" size="sm" asChild>

@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
 import { useSearchParams } from "next/navigation";
-import { useCreateMember, useGetHousehold } from "@/lib/api";
+import { useCreateMember, useGetHousehold } from "@/lib/api/members";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,10 +28,7 @@ function MemberNewInner({ householdId }: { householdId: number }) {
 
   const formSchema = z.object({
     full_name: z.string().min(1, tForms("required")),
-    citizenship_no: z.string().min(1, tForms("required")),
-    membership_type: z.enum(["general", "lifetime", "institutional", "special", "other"]),
-    membership_status: z.enum(["active", "inactive", "cancelled"]),
-    date_joined: z.string().min(1, tForms("required")),
+    member_photo: z.instanceof(File).optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -40,25 +37,22 @@ function MemberNewInner({ householdId }: { householdId: number }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       full_name: "",
-      citizenship_no: "",
-      membership_type: "general",
-      membership_status: "active",
-      date_joined: new Date().toISOString().split("T")[0],
+      member_photo: undefined,
     },
   });
 
   function onSubmit(values: FormValues) {
     createMember.mutate(
-      { data: { ...values, household: householdId } },
+      { full_name: values.full_name, household: householdId, member_photo: values.member_photo },
       {
         onSuccess: () => {
           toast({ title: t("toastCreated") });
           queryClient.invalidateQueries({ queryKey: ["/api/v1/members/members/"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/", householdId] });
+          queryClient.invalidateQueries({ queryKey: [`/api/v1/members/households/${householdId}/`] });
           router.push(`/members/${householdId}`);
         },
         onError: (error: any) => {
-          const detail = error?.response?.data?.citizenship_no?.[0];
+          const detail = error?.response?.data?.full_name?.[0];
           toast({
             title: t("toastFailed"),
             description: detail ?? t("toastFailedDesc"),
@@ -89,43 +83,17 @@ function MemberNewInner({ householdId }: { householdId: number }) {
               <FormField control={form.control} name="full_name" render={({ field }) => (
                 <FormItem><FormLabel>{t("fullName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="citizenship_no" render={({ field }) => (
-                <FormItem><FormLabel>{t("citizenshipNo")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-              )} />
-              <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="membership_type" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("membershipType")}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="general">{t("membershipGeneral")}</SelectItem>
-                        <SelectItem value="lifetime">{t("membershipLifetime")}</SelectItem>
-                        <SelectItem value="institutional">{t("membershipInstitutional")}</SelectItem>
-                        <SelectItem value="special">{t("membershipSpecial")}</SelectItem>
-                        <SelectItem value="other">{t("membershipOther")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="membership_status" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("membershipStatus")}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">{t("statusActive")}</SelectItem>
-                        <SelectItem value="inactive">{t("statusInactive")}</SelectItem>
-                        <SelectItem value="cancelled">{t("statusCancelled")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
-              <FormField control={form.control} name="date_joined" render={({ field }) => (
-                <FormItem><FormLabel>{t("dateJoined")}</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+              <FormField control={form.control} name="member_photo" render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Photo</FormLabel>
+                  <FormControl>
+                    <div className="space-y-2">
+                      <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} {...field} />
+                      {value && <div className="text-sm text-muted-foreground">Selected: {value.name}</div>}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )} />
               <div className="flex gap-4 pt-4">
                 <Button type="submit" disabled={createMember.isPending}>

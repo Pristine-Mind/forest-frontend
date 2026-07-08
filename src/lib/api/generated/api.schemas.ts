@@ -300,10 +300,6 @@ export interface MemberInput {
   /** @nullable */
   user?: number | null;
   full_name: string;
-  citizenship_no: string;
-  membership_type: MemberInputMembershipType;
-  membership_status: MemberInputMembershipStatus;
-  date_joined: string;
 }
 
 export type MemberUpdateMembershipType = typeof MemberUpdateMembershipType[keyof typeof MemberUpdateMembershipType];

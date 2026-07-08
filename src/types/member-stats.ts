@@ -31,10 +31,10 @@ export interface LastRenewal {
 export interface MemberStats {
   id: number;
   full_name: string;
-  citizenship_no: string;
-  membership_type: string;
-  membership_status: string;
-  date_joined: string;
+  citizenship_no?: string;
+  membership_type?: string;
+  membership_status?: string;
+  date_joined?: string;
   
   household_details: HouseholdDetails;
   user_email?: string;
