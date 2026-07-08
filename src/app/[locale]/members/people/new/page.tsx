@@ -28,7 +28,8 @@ function MemberNewInner({ householdId }: { householdId: number }) {
 
   const formSchema = z.object({
     full_name: z.string().min(1, tForms("required")),
-    member_photo: z.instanceof(File).optional(),
+    photo: z.instanceof(File).optional(),
+    relation: z.string().min(1, tForms("required")),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -37,13 +38,14 @@ function MemberNewInner({ householdId }: { householdId: number }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       full_name: "",
-      member_photo: undefined,
+      photo: undefined,
+      relation: "",
     },
   });
 
   function onSubmit(values: FormValues) {
     createMember.mutate(
-      { full_name: values.full_name, household: householdId, member_photo: values.member_photo },
+      { full_name: values.full_name, household: householdId, photo: values.photo },
       {
         onSuccess: () => {
           toast({ title: t("toastCreated") });
@@ -83,7 +85,10 @@ function MemberNewInner({ householdId }: { householdId: number }) {
               <FormField control={form.control} name="full_name" render={({ field }) => (
                 <FormItem><FormLabel>{t("fullName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
-              <FormField control={form.control} name="member_photo" render={({ field: { value, onChange, ...field } }) => (
+              <FormField control={form.control} name="relation" render={({ field }) => (
+                <FormItem><FormLabel>{t("relation")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="photo" render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
                   <FormLabel>Photo</FormLabel>
                   <FormControl>

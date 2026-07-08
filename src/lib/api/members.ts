@@ -8,11 +8,6 @@ import {
 } from "@tanstack/react-query";
 import { customFetch } from "./custom-fetch";
 
-// ============================================================================
-// Types & Interfaces
-// ============================================================================
-
-// Enums
 export type WealthClass = "rich" | "medium" | "poor";
 export type MembershipType = "general" | "lifetime" | "institutional" | "special" | "other";
 export type MembershipStatus = "active" | "inactive" | "cancelled";
@@ -21,9 +16,6 @@ export type EducationLevel = "illiterate" | "basic" | "secondary_plus";
 export type EntryFeeType = "new_household" | "split_household";
 export type FeeTier = "on_time" | "overdue_3yr" | "overdue_5yr" | "overdue_5yr_plus";
 
-// ============================================================================
-// Household Model
-// ============================================================================
 
 export interface Household {
   id: number;
@@ -49,6 +41,7 @@ export interface Household {
   photo?: string;
   created_at: string;
   updated_at: string;
+  contact_number?: string;
 }
 
 export interface HouseholdInput {
@@ -71,6 +64,7 @@ export interface HouseholdInput {
   registration_date: string;
   entry_fee_type: EntryFeeType;
   photo?: File;
+  contact_number?: string;
 }
 
 export interface HouseholdUpdate extends Partial<HouseholdInput> {}
@@ -87,6 +81,7 @@ export interface Member {
   user_email?: string;
   full_name: string;
   photo?: string;
+  relation?: string;
   created_at: string;
   updated_at: string;
 }
@@ -95,7 +90,8 @@ export interface MemberInput {
   household: number;
   user?: number;
   full_name: string;
-  member_photo?: File;
+  photo?: File;
+  relation?: string;
 }
 
 export interface MemberUpdate extends Partial<MemberInput> {}

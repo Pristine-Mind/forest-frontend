@@ -53,7 +53,9 @@
     "add": "Add",
     "update": "Update",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "confirm": "Confirm",
+    "clear": "Clear"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -911,6 +913,12 @@
     "received": "Received",
     "entries": "Entries",
     "programs": "Programs",
+    "searchPlaceholder": "Search by household name...",
+    "noSearchResults": "No results found for your search",
+    "showing": "Showing",
+    "of": "of",
+    "total": "total",
+    "householdUpdate": "Household Updated Successfully",
     "people": {
       "title": "People",
       "subtitle": "All registered individuals in the CFUG.",
@@ -942,7 +950,15 @@
       "toastCreated": "Member added successfully",
       "toastFailed": "Failed to add member",
       "toastFailedDesc": "Please check the form and try again.",
-      "noHousehold": "No household specified. Go back and select a household first."
+      "noHousehold": "No household specified. Go back and select a household first.",
+      "relation": "Relation",
+      "editTitle": "Edit",
+      "editingMemberOfHousehold": "Member of Household",
+      "update": "Update",
+      "toastUpdated": "Member updated successfully",
+      "toastUpdateFailed": "Failed to update member",
+      "toastUpdateFailedDesc": "Please check the form and try again.",
+      "notFound": "Member not found."
     }
   },
   "offense": {

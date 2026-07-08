@@ -7,8 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
 import {
-  useCreateHousehold,
-  type HouseholdInput,
+  useUpdateHousehold,
+  useGetHousehold,
+  type HouseholdUpdate,
   type MembershipStatus,
   type MembershipType,
   type EntryFeeType,
@@ -23,15 +24,19 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { use } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { useEffect } from "react";
 
-function MemberNew() {
+function HouseholdEdit({ id }: { id: number }) {
   const t = useTranslations("members");
   const tCommon = useTranslations("common");
   const tForms = useTranslations("forms");
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const createHousehold = useCreateHousehold();
+  const updateHousehold = useUpdateHousehold();
+  const { data: household, isLoading } = useGetHousehold(id);
 
   const formSchema = z.object({
     household_head_name: z.string().min(1, tForms("required")),
@@ -39,21 +44,17 @@ function MemberNew() {
     citizenship_no: z.string().min(1, tForms("required")),
     contact_number: z.string().optional(),
     wealth_class: z.enum(["rich", "medium", "poor"] as const),
-    membership_type: z.enum(["general", "lifetime", "institutional", "special", "other"] as const).default("general"),
-    membership_status: z.enum(["active", "inactive", "cancelled"] as const).default("active"),
+    membership_type: z.enum(["general", "lifetime", "institutional", "special", "other"] as const),
+    membership_status: z.enum(["active", "inactive", "cancelled"] as const),
     date_joined: z.string().min(1, tForms("required")),
-
-    population_male: z.coerce.number().int().min(0).default(0),
-    population_female: z.coerce.number().int().min(0).default(0),
-
-    livestock_cattle: z.coerce.number().int().min(0).default(0),
-    livestock_buffalo: z.coerce.number().int().min(0).default(0),
-    livestock_goat: z.coerce.number().int().min(0).default(0),
-
+    population_male: z.coerce.number().int().min(0),
+    population_female: z.coerce.number().int().min(0),
+    livestock_cattle: z.coerce.number().int().min(0),
+    livestock_buffalo: z.coerce.number().int().min(0),
+    livestock_goat: z.coerce.number().int().min(0),
     education_level: z.enum(["illiterate", "basic", "secondary_plus"] as const).optional().or(z.literal("")),
     occupation: z.string().optional(),
     caste_ethnicity: z.string().optional(),
-
     registration_date: z.string().min(1, tForms("required")),
     entry_fee_type: z.enum(["new_household", "split_household"] as const),
     status: z.enum(["active", "inactive"] as const),
@@ -73,18 +74,14 @@ function MemberNew() {
       membership_type: "general",
       membership_status: "active",
       date_joined: new Date().toISOString().split("T")[0],
-
       population_male: 0,
       population_female: 0,
-
       livestock_cattle: 0,
       livestock_buffalo: 0,
       livestock_goat: 0,
-
       education_level: "",
       occupation: "",
       caste_ethnicity: "",
-
       registration_date: new Date().toISOString().split("T")[0],
       entry_fee_type: "new_household",
       status: "active",
@@ -92,8 +89,36 @@ function MemberNew() {
     },
   });
 
+  // Reset form when household data loads
+  useEffect(() => {
+    if (household) {
+      form.reset({
+        household_head_name: household.household_head_name,
+        tole: household.tole || "",
+        citizenship_no: household.citizenship_no,
+        contact_number: household.contact_number || "",
+        wealth_class: household.wealth_class as WealthClass,
+        membership_type: household.membership_type as MembershipType,
+        membership_status: household.membership_status as MembershipStatus,
+        date_joined: household.date_joined,
+        population_male: household.population_male,
+        population_female: household.population_female,
+        livestock_cattle: household.livestock_cattle,
+        livestock_buffalo: household.livestock_buffalo,
+        livestock_goat: household.livestock_goat,
+        education_level: household.education_level as EducationLevel | undefined || "",
+        occupation: household.occupation || "",
+        caste_ethnicity: household.caste_ethnicity || "",
+        registration_date: household.registration_date,
+        entry_fee_type: household.entry_fee_type as EntryFeeType,
+        status: household.status as HouseholdStatus,
+        photo: undefined,
+      });
+    }
+  }, [household, form.reset]);
+
   function onSubmit(values: FormValues) {
-    const payload: HouseholdInput = {
+    const payload: HouseholdUpdate = {
       household_head_name: values.household_head_name,
       tole: values.tole,
       citizenship_no: values.citizenship_no,
@@ -116,21 +141,28 @@ function MemberNew() {
       photo: values.photo,
     };
 
-    createHousehold.mutate(payload, {
-      onSuccess: () => {
-        toast({ title: t("toastCreated") });
-        queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/"] });
-        router.push("/members");
-      },
-      onError: () => toast({ title: t("toastFailed"), variant: "destructive" }),
-    });
+    updateHousehold.mutate(
+      { id, data: payload },
+      {
+        onSuccess: () => {
+          toast({ title: t("householdUpdated") || "Household updated" });
+          queryClient.invalidateQueries({ queryKey: [`/api/v1/members/households/${id}/`] });
+          queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/"] });
+          router.push(`/members/${id}`);
+        },
+        onError: () => toast({ title: t("toastFailed"), variant: "destructive" }),
+      }
+    );
   }
+
+  if (isLoading) return <div className="flex items-center justify-center p-8"><Spinner /></div>;
+  if (!household) return <div>{t("notFound")}</div>;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("newTitle")}</h1>
-        <p className="text-muted-foreground mt-2">{t("newSubtitle")}</p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("editTitle") || "Edit Household"}</h1>
+        <p className="text-muted-foreground mt-2">Update household information</p>
       </div>
       <Card>
         <CardHeader><CardTitle>{t("formTitle")}</CardTitle></CardHeader>
@@ -270,7 +302,7 @@ function MemberNew() {
                   <FormField control={form.control} name="education_level" render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("educationLevel")}</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                         <FormControl><SelectTrigger><SelectValue placeholder={t("educationNotSpecified")} /></SelectTrigger></FormControl>
                         <SelectContent>
                           <SelectItem value="illiterate">{t("educationIlliterate")}</SelectItem>
@@ -326,10 +358,10 @@ function MemberNew() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={createHousehold.isPending}>
-                  {createHousehold.isPending ? t("creating") : t("createHousehold")}
+                <Button type="submit" disabled={updateHousehold.isPending}>
+                  {updateHousehold.isPending ? "Updating..." : "Update Household"}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => router.push("/members")}>{tCommon("cancel")}</Button>
+                <Button type="button" variant="outline" onClick={() => router.push(`/members/${id}`)}>{tCommon("cancel")}</Button>
               </div>
             </form>
           </Form>
@@ -339,6 +371,7 @@ function MemberNew() {
   );
 }
 
-export default function Page() {
-  return <AuthGuard><AppLayout><MemberNew /></AppLayout></AuthGuard>;
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return <AuthGuard><AppLayout><HouseholdEdit id={Number(id)} /></AppLayout></AuthGuard>;
 }

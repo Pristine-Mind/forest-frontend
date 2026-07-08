@@ -272,6 +272,7 @@ export interface MemberListItem {
   membership_status: MemberListItemMembershipStatus;
   household_name: string;
   date_joined: string;
+  relation: string;
   membership_type: MemberMembershipType;
 }
 
