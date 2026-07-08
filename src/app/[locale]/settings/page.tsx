@@ -7,6 +7,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import Image from "next/image";
+
 import {
   useListPriceRates,
   useCreatePriceRate,
@@ -70,10 +72,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Settings2, Trees } from "lucide-react";
+import { Plus, Pencil, Trash2, Settings2, Trees, Stamp } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
-// ─── Price Rate Form ────────────────────────────────────────────────────────
+import logo from "@/image/logo.jpeg";
 
 const priceRateSchema = z.object({
   species: z.coerce.number().min(1, "Species is required"),
@@ -1400,6 +1401,72 @@ function BoundariesTab() {
   );
 }
 
+function StampCircle() {
+  return (
+    <Image src={logo} alt="Community Forest Stamp" className="h-[150px] w-[150px] sm:h-[190px] sm:w-[190px]" />
+  );
+}
+
+function StampTemplateTab() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Community Forest Stamp Template</CardTitle>
+        <CardDescription>
+          सामुदायिक वनको टाँचाको नमूना
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="mx-auto max-w-[700px] rounded-lg border bg-white px-6 py-10 sm:px-12">
+          <p className="mb-8 text-center text-base">
+            यस सामुदायिक वनको टाँचा निम्नअनुसारको हुने छ ।
+          </p>
+
+          <div className="mb-10 flex justify-center">
+            <div className="grid grid-cols-[70px_190px_70px] grid-rows-[70px_190px_70px] items-center justify-items-center sm:grid-cols-[90px_190px_90px]">
+              <div />
+              <div className="col-start-2 row-start-1 border-2 border-neutral-900 bg-white px-4 py-2 text-xl font-bold">
+                KAI
+              </div>
+              <div />
+
+              <div className="col-start-1 row-start-2 border-2 border-neutral-900 bg-white px-4 py-2 text-xl font-bold">
+                ०५
+              </div>
+              <div className="col-start-2 row-start-2">
+                <StampCircle />
+              </div>
+              <div className="col-start-3 row-start-2 border-2 border-neutral-900 bg-white px-4 py-2 text-xl font-bold">
+                ०३
+              </div>
+
+              <div />
+              <div className="col-start-2 row-start-3 border-2 border-neutral-900 bg-white px-4 py-2 text-xl font-bold">
+                CH
+              </div>
+              <div />
+            </div>
+          </div>
+
+          <div className="space-y-3 text-base leading-8">
+            <p className="font-bold">द्रष्टव्य:</p>
+            <p>
+              १) डायमिटर १.४ (३.५ से.मी.) ईन्चको गोल आकारमा विचमा रुखरोपौ वन
+              जोगाऔ लोगो राख्ने र चारैतिर देहाय बमोजिमको National Database
+              अनुसार कोड राख्ने ।
+            </p>
+            <p className="ml-8">क) डिभिजन वन कार्यालयको कोड = KAI</p>
+            <p className="ml-8">ख) स.डि.ब.का. को कोड = CH</p>
+            <p className="ml-8">ग) गा.पा./न.पा कोड = ०५</p>
+            <p className="ml-8">घ) साे.व. को कोड = ०३</p>
+            <p>२) यसरी बनाइने टाँचा फलामको बनाउनु पर्नेछ ।</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Main Settings Page ──────────────────────────────────────────────────────
 
 function Settings() {
@@ -1415,7 +1482,7 @@ function Settings() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
           <p className="text-muted-foreground mt-1">
-            Configure price rates, visitor fees, fund allocation rules, bank accounts, and view forest boundaries.
+            Configure price rates, visitor fees, fund allocation rules, bank accounts, forest boundaries, and the official stamp template.
           </p>
         </div>
       </div>
@@ -1427,13 +1494,16 @@ function Settings() {
       )}
 
       <Tabs defaultValue="price-rates">
-        <TabsList className="grid w-full grid-cols-5" data-testid="settings-tabs">
+        <TabsList className="grid w-full grid-cols-6" data-testid="settings-tabs">
           <TabsTrigger value="price-rates" data-testid="tab-price-rates">Price Rates</TabsTrigger>
           <TabsTrigger value="visitor-fees" data-testid="tab-visitor-fees">Visitor Fees</TabsTrigger>
           <TabsTrigger value="fund-allocation" data-testid="tab-fund-allocation">Fund Allocation</TabsTrigger>
           <TabsTrigger value="bank-accounts" data-testid="tab-bank-accounts">Bank Accounts</TabsTrigger>
           <TabsTrigger value="boundaries" data-testid="tab-boundaries">
             <Trees className="h-4 w-4 mr-1" /> Boundaries
+          </TabsTrigger>
+          <TabsTrigger value="stamp-template" data-testid="tab-stamp-template">
+            <Stamp className="h-4 w-4 mr-1" /> Stamp Template
           </TabsTrigger>
         </TabsList>
 
@@ -1455,6 +1525,10 @@ function Settings() {
 
         <TabsContent value="boundaries" className="mt-6">
           <BoundariesTab />
+        </TabsContent>
+
+        <TabsContent value="stamp-template" className="mt-6">
+          <StampTemplateTab />
         </TabsContent>
       </Tabs>
     </div>
