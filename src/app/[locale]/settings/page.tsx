@@ -1205,8 +1205,7 @@ type GeoJsonFeatureCollection = {
 // Adjust this if the forest API is served from a different host/port, or set
 // NEXT_PUBLIC_FOREST_BOUNDARIES_URL in your env to override it.
 const BOUNDARIES_GEOJSON_URL =
-  process.env.NEXT_PUBLIC_FOREST_BOUNDARIES_URL ??
-  "http://localhost:8005/api/v1/forest/boundaries/geojson/";
+  `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/forest/boundaries/geojson/`;
 
 async function fetchBoundariesGeoJson(): Promise<GeoJsonFeatureCollection> {
   return customFetch<GeoJsonFeatureCollection>(BOUNDARIES_GEOJSON_URL, {
