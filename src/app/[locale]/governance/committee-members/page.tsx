@@ -7,12 +7,14 @@ import {
   useListCommitteeMembers,
   useGetCommitteeQuotaStatus,
 } from "@/lib/api";
+import { CommitteeMemberWithPhoto } from "@/lib/api/committee";
+import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
@@ -25,6 +27,16 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = 
   vacant: "secondary",
   removed: "destructive",
 };
+
+function getInitials(name?: string | null): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
 
 function CommitteeMembersList() {
   const { can } = useAuthStore();
@@ -107,6 +119,7 @@ function CommitteeMembersList() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Photo</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Position</TableHead>
                   <TableHead>Gender</TableHead>
@@ -117,23 +130,34 @@ function CommitteeMembersList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data?.results.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell>{c.member_name}</TableCell>
-                    <TableCell className="capitalize">{c.position.replace("_", " ")}</TableCell>
-                    <TableCell className="capitalize">{c.gender}</TableCell>
-                    <TableCell>{formatDate(c.term_start)}</TableCell>
-                    <TableCell>{formatDate(c.term_end)}</TableCell>
-                    <TableCell>
-                      <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"} className="capitalize">{c.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" asChild><Link href={`/governance/committee-members/${c.id}`}>View / Edit</Link></Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {data?.results.map((c) => {
+                  const member = c as CommitteeMemberWithPhoto;
+                  return (
+                    <TableRow key={c.id}>
+                      <TableCell>
+                        <Avatar className="h-9 w-9 border">
+                          {member.photo && <AvatarImage src={member.photo} alt={member.member_name ?? ""} />}
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                            {getInitials(member.member_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell>{c.member_name}</TableCell>
+                      <TableCell className="capitalize">{c.position.replace("_", " ")}</TableCell>
+                      <TableCell className="capitalize">{c.gender}</TableCell>
+                      <TableCell>{formatDate(c.term_start)}</TableCell>
+                      <TableCell>{formatDate(c.term_end)}</TableCell>
+                      <TableCell>
+                        <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"} className="capitalize">{c.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" asChild><Link href={`/governance/committee-members/${c.id}`}>View / Edit</Link></Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
                 {(!data?.results || data.results.length === 0) && (
-                  <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">No committee members found.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No committee members found.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

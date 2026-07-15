@@ -40,6 +40,7 @@ function HouseholdEdit({ id }: { id: number }) {
 
   const formSchema = z.object({
     household_head_name: z.string().min(1, tForms("required")),
+    english_name: z.string().optional(),
     tole: z.string().optional(),
     citizenship_no: z.string().min(1, tForms("required")),
     contact_number: z.string().optional(),
@@ -67,6 +68,7 @@ function HouseholdEdit({ id }: { id: number }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       household_head_name: "",
+      english_name: "",
       tole: "",
       citizenship_no: "",
       contact_number: "",
@@ -94,6 +96,7 @@ function HouseholdEdit({ id }: { id: number }) {
     if (household) {
       form.reset({
         household_head_name: household.household_head_name,
+        english_name: household.english_name || "",
         tole: household.tole || "",
         citizenship_no: household.citizenship_no,
         contact_number: household.contact_number || "",
@@ -120,6 +123,7 @@ function HouseholdEdit({ id }: { id: number }) {
   function onSubmit(values: FormValues) {
     const payload: HouseholdUpdate = {
       household_head_name: values.household_head_name,
+      english_name: values.english_name,
       tole: values.tole,
       citizenship_no: values.citizenship_no,
       contact_number: values.contact_number,
@@ -175,6 +179,9 @@ function HouseholdEdit({ id }: { id: number }) {
                 <h3 className="text-sm font-semibold text-muted-foreground">Basic Information</h3>
                 <FormField control={form.control} name="household_head_name" render={({ field }) => (
                   <FormItem><FormLabel>{t("headOfHouseholdName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="english_name" render={({ field }) => (
+                  <FormItem><FormLabel>{t("englishName")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="citizenship_no" render={({ field }) => (
                   <FormItem><FormLabel>Citizenship No.</FormLabel><FormControl><Input {...field} placeholder="e.g., 56789-2087-123456" /></FormControl><FormMessage /></FormItem>

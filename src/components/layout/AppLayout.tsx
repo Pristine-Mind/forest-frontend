@@ -27,6 +27,8 @@ const NAV_ITEMS = [
   { href: "/fund", labelKey: "fundManagement", icon: Banknote },
   { href: "/livelihood", labelKey: "livelihood", icon: Leaf },
   { href: "/offense", labelKey: "offenseTracking", icon: Gavel },
+  { href: "/bank-transactions", labelKey: "bank-transactions", icon: Banknote },
+  { href: "/timber-log", labelKey: "timber-log", icon: Trees },
   { href: "/reports", labelKey: "reports", icon: BarChart3 },
   { href: "/settings", labelKey: "settings", icon: Settings2 },
 ];

@@ -137,7 +137,7 @@ export default function FellingRegistersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2 mt-10 ml-10">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Felling Registers (अनुसूची-८)</h1>
         <Button onClick={() => setShowForm(!showForm)} data-testid="button-create-felling-register">

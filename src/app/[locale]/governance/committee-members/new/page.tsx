@@ -5,7 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useCreateCommitteeMember, useListMembers } from "@/lib/api";
+
+import { useCreateCommitteeMemberWithPhoto } from "@/lib/api/committee";
+import MemberSelect from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +24,7 @@ const formSchema = z.object({
   term_start: z.string().min(1, "Term start is required"),
   term_end: z.string().min(1, "Term end is required"),
   status: z.enum(["active", "vacant", "removed"]),
+  photo: z.instanceof(File).optional(),
 }).refine((data) => data.term_end >= data.term_start, {
   message: "Term end must be on or after term start",
   path: ["term_end"],
@@ -33,8 +36,7 @@ function AddCommitteeMember() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const createMember = useCreateCommitteeMember();
-  const { data: members } = useListMembers({ membership_status: "active", limit: 100 });
+  const createMember = useCreateCommitteeMemberWithPhoto();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -46,21 +48,21 @@ function AddCommitteeMember() {
       term_start: "",
       term_end: "",
       status: "active",
+      photo: undefined,
     },
   });
 
   function onSubmit(values: FormValues) {
     createMember.mutate(
       {
-        data: {
-          member: Number(values.member),
-          position: values.position,
-          gender: values.gender,
-          caste_ethnicity: values.caste_ethnicity || undefined,
-          term_start: values.term_start,
-          term_end: values.term_end,
-          status: values.status,
-        },
+        member: Number(values.member),
+        position: values.position,
+        gender: values.gender,
+        caste_ethnicity: values.caste_ethnicity || undefined,
+        term_start: values.term_start,
+        term_end: values.term_end,
+        status: values.status,
+        photo: values.photo,
       },
       {
         onSuccess: () => {
@@ -93,14 +95,13 @@ function AddCommitteeMember() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Member</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {members?.results.map((m) => (
-                          <SelectItem key={m.id} value={String(m.id)}>{m.full_name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <MemberSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select member"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -211,6 +212,32 @@ function AddCommitteeMember() {
                         <SelectItem value="removed">Removed</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="photo"
+                render={({ field: { value, onChange, ...field } }) => (
+                  <FormItem>
+                    <FormLabel>Photo</FormLabel>
+                    <FormControl>
+                      <div className="space-y-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => onChange(e.target.files?.[0])}
+                          {...field}
+                        />
+                        {value && (
+                          <div className="text-sm text-muted-foreground">
+                            Selected: {value.name}
+                          </div>
+                        )}
+                      </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

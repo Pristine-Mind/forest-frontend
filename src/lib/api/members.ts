@@ -20,6 +20,7 @@ export type FeeTier = "on_time" | "overdue_3yr" | "overdue_5yr" | "overdue_5yr_p
 export interface Household {
   id: number;
   household_head_name: string;
+  english_name?: string;
   tole: string;
   citizenship_no: string;
   wealth_class: WealthClass;
@@ -46,6 +47,7 @@ export interface Household {
 
 export interface HouseholdInput {
   household_head_name: string;
+  english_name?: string;
   tole?: string;
   citizenship_no: string;
   wealth_class: WealthClass;

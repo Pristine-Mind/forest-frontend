@@ -69,7 +69,25 @@
     "totalIncome": "कुल आम्दानी",
     "totalIncomeDesc": "कुल CFUG आम्दानी",
     "visitorEntries": "आगन्तुक प्रवेशहरू",
-    "visitorEntriesDesc": "प्रणालीमा रेकर्ड गरिएको"
+    "visitorEntriesDesc": "प्रणालीमा रेकर्ड गरिएको",
+    "committeeMembers": {
+      "title": "समिति सदस्यहरू",
+      "viewAll": "सबै हेर्नुहोस्",
+      "empty": "कुनै सक्रिय समिति सदस्य छैनन्।",
+      "unnamed": "नाम नभएको",
+      "more": "+{count} थप"
+    },
+    "committeeQuota": {
+      "title": "समिति कोटाहरू",
+      "activeMembers": "सक्रिय सदस्यहरू",
+      "activeMembersDesc": "हाल सेवामा",
+      "femaleRepresentation": "महिला प्रतिनिधित्व",
+      "minorityRepresentation": "अल्पसंख्यक प्रतिनिधित्व",
+      "min": "न्यूनतम",
+      "quotaMet": "पूरा",
+      "quotaNotMet": "अपूरा",
+      "empty": "कोटा डाटा उपलब्ध छैन।"
+    }
   },
   "forms": {
     "required": "यो फिल्ड आवश्यक छ",
@@ -825,6 +843,7 @@
     "subtitle": "सामुदायिक वन सदस्य घरधुरीहरू व्यवस्थापन गर्नुहोस्।",
     "addHousehold": "घरधुरी थप्नुहोस्",
     "registeredHouseholds": "दर्ता गरिएका घरधुरीहरू",
+    "tableNameInEnglish": "नाम (अंग्रेजीमा)",
     "tableId": "ID",
     "tableHeadOfHousehold": "घरमूली",
     "tableTole": "टोल",

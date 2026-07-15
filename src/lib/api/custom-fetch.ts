@@ -357,6 +357,7 @@ export async function customFetch<T = unknown>(
     const token = await _authTokenGetter();
     if (token) {
       const headerValue = token.includes(" ") ? token : `Bearer ${token}`;
+      console.log("Attaching auth token to request:", headerValue); // Debugging line
       headers.set("authorization", headerValue);
     }
   }

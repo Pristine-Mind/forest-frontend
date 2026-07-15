@@ -81,7 +81,7 @@ function SalesList() {
               <TableBody>
                 {data?.results.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell>{s.buyer_name}</TableCell>
+                    <TableCell>{s.buyer_name || s.member_name || '-'}</TableCell>
                     <TableCell>{s.species_name} — {s.grade}</TableCell>
                     <TableCell className="text-right">{s.quantity}</TableCell>
                     <TableCell className="text-right">{s.total_amount}</TableCell>

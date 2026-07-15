@@ -140,6 +140,7 @@ export interface Household {
   status: HouseholdStatus;
   created_at?: string;
   updated_at?: string;
+  english_name?:string;
 }
 
 export type HouseholdInputWealthClass = typeof HouseholdInputWealthClass[keyof typeof HouseholdInputWealthClass];

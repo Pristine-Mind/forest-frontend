@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useCreateOffenseReport, useListUsers } from "@/lib/api";
+import { useCreateOffenseReport } from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import MemberSelect from "@/components/members/MemberSelect";
 
 const formSchema = z.object({
   accused_name: z.string().min(1, "Accused name is required"),
@@ -29,16 +30,11 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-function displayUserName(u: { first_name?: string; last_name?: string; email: string }) {
-  return u.first_name || u.last_name ? `${u.first_name ?? ""} ${u.last_name ?? ""}`.trim() : u.email;
-}
-
 function FileOffenseReport() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createReport = useCreateOffenseReport();
-  const { data: users } = useListUsers({ limit: 200 });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -195,15 +191,15 @@ function FileOffenseReport() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Reported By (optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select user" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="">Unknown</SelectItem>
-                          {users?.results.map((u) => (
-                            <SelectItem key={u.id} value={String(u.id)}>{displayUserName(u)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <MemberSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select member who reported"
+                          allowClear
+                          clearLabel="Unknown"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -214,15 +210,15 @@ function FileOffenseReport() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Informant (optional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select user" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="">Unknown</SelectItem>
-                          {users?.results.map((u) => (
-                            <SelectItem key={u.id} value={String(u.id)}>{displayUserName(u)}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <MemberSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select informant"
+                          allowClear
+                          clearLabel="Unknown"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

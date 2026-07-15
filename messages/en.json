@@ -13,7 +13,9 @@
     "livelihood": "Livelihood",
     "offenseTracking": "Offense Tracking",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "bank-transactions": "Bank Transactions",
+    "timber-log": "Timber Log"
   },
   "auth": {
     "login": "Login",
@@ -71,7 +73,25 @@
     "totalIncome": "Total Income",
     "totalIncomeDesc": "Overall CFUG income",
     "visitorEntries": "Visitor Entries",
-    "visitorEntriesDesc": "Recorded in the system"
+    "visitorEntriesDesc": "Recorded in the system",
+    "committeeMembers": {
+      "title": "Committee Members",
+      "viewAll": "View all",
+      "empty": "No active committee members.",
+      "unnamed": "Unnamed",
+      "more": "+{count} more"
+    },
+    "committeeQuota": {
+      "title": "Committee Quotas",
+      "activeMembers": "Active Members",
+      "activeMembersDesc": "Currently serving",
+      "femaleRepresentation": "Female Representation",
+      "minorityRepresentation": "Minority Representation",
+      "min": "min",
+      "quotaMet": "Met",
+      "quotaNotMet": "Not Met",
+      "empty": "Quota data unavailable."
+    }
   },
   "forms": {
     "required": "This field is required",
@@ -210,6 +230,7 @@
       "statusPaid": "Paid",
       "statusDue": "Due",
       "statusPartial": "Partial",
+      "paymentType": "Payment Type",
       "paymentTypeCash": "Cash",
       "paymentTypeCheque": "Cheque",
       "paymentTypeDigitalWallet": "Digital Wallet"
@@ -827,6 +848,7 @@
     "subtitle": "Manage community forest member households.",
     "addHousehold": "Add Household",
     "registeredHouseholds": "Registered Households",
+    "tableNameInEnglish": "Name (English)",
     "tableId": "ID",
     "tableHeadOfHousehold": "Head of Household",
     "tableTole": "Tole",
@@ -849,6 +871,7 @@
     "view": "View",
     "empty": "No households found.",
     "newTitle": "New Household",
+    "editTitle": "Edit Household",
     "newSubtitle": "Register a new household in the CFUG.",
     "formTitle": "Household Details",
     "headOfHouseholdName": "Head of Household Name",
@@ -911,6 +934,7 @@
     "householdInfo": "Household Information",
     "filed": "Filed",
     "received": "Received",
+    "englishName": "English Name",
     "entries": "Entries",
     "programs": "Programs",
     "searchPlaceholder": "Search by household name...",

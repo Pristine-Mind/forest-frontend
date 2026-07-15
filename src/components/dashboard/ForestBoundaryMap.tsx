@@ -1,37 +1,73 @@
 "use client";
+
+import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import type { Layer, PathOptions } from "leaflet";
+import type { GeoJSON as LeafletGeoJSON, Layer, PathOptions } from "leaflet";
 import type { Feature } from "geojson";
 import "leaflet/dist/leaflet.css";
 import { forestBoundaries } from "@/lib/data/forest-boundaries.geojson";
 
 const styleByFeature = (feature?: Feature): PathOptions => {
   const isUnlabeled = feature?.properties?.name?.includes("unlabeled");
+
   return {
-    color: isUnlabeled ? "#a3a3a3" : "#15803d",
-    weight: 2,
-    fillColor: isUnlabeled ? "#a3a3a3" : "#22c55e",
-    fillOpacity: isUnlabeled ? 0.1 : 0.25,
+    color: isUnlabeled ? "#525252" : "#14532d",
+    weight: 3,
+    opacity: 1,
+    fillColor: isUnlabeled ? "#737373" : "#16a34a",
+    fillOpacity: isUnlabeled ? 0.08 : 0.18,
   };
 };
 
 function onEachFeature(feature: Feature, layer: Layer) {
-  const name = feature.properties?.name ?? "Unnamed area";
-  layer.bindTooltip(name, { sticky: true });
+  const name = feature.properties?.name ?? "Unnamed Area";
+  layer.bindTooltip(name, {
+    sticky: true,
+    direction: "top",
+  });
+}
+
+function FitBounds() {
+  const geoJsonRef = useRef<LeafletGeoJSON>(null);
+
+  useEffect(() => {
+    if (geoJsonRef.current) {
+      const map = geoJsonRef.current._map;
+
+      if (map) {
+        map.fitBounds(geoJsonRef.current.getBounds(), {
+          padding: [30, 30],
+          maxZoom: 18,
+        });
+      }
+    }
+  }, []);
+
+  return (
+    <GeoJSON
+      ref={geoJsonRef}
+      data={forestBoundaries}
+      style={styleByFeature}
+      onEachFeature={onEachFeature}
+    />
+  );
 }
 
 export function ForestBoundaryMap() {
-  // Centered roughly on the boundary data above
-  const center: [number, number] = [28.81, 80.695];
-
   return (
-    <div className="h-[420px] w-full overflow-hidden rounded-lg border">
-      <MapContainer center={center} zoom={12} scrollWheelZoom={false} className="h-full w-full">
+    <div className="h-[540px] w-full overflow-hidden rounded-xl border shadow-sm">
+      <MapContainer
+        center={[28.81, 80.695]}
+        zoom={14}
+        scrollWheelZoom
+        className="h-full w-full"
+      >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <GeoJSON data={forestBoundaries} style={styleByFeature} onEachFeature={onEachFeature} />
+
+        <FitBounds />
       </MapContainer>
     </div>
   );

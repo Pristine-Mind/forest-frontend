@@ -6,6 +6,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Home, Axe, Banknote, ShieldAlert, BadgeDollarSign } from "lucide-react";
 import { useListHarvestRequests, useGetAnnualDfoReport } from "@/lib/api";
+import { CommitteeWidget } from "@/components/dashboard/CommitteeWidget";
+import { CommitteeQuotaWidget } from "@/components/dashboard/CommitteeQuotaWidget";
 
 const ForestBoundaryMap = dynamic(
   () => import("@/components/dashboard/ForestBoundaryMap").then((m) => m.ForestBoundaryMap),
@@ -38,15 +40,15 @@ function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
         <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {metrics.map((m, i) => (
-          <Card key={i}>
+          <Card key={i} className="hover:shadow-sm transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">{m.title}</CardTitle>
               <m.icon className="h-5 w-5 text-muted-foreground" />
@@ -59,14 +61,20 @@ function Dashboard() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Forest Block Boundaries</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ForestBoundaryMap />
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-4 items-start">
+        <Card className="lg:col-span-2 xl:col-span-3">
+          <CardHeader>
+            <CardTitle>Forest Block Boundaries</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ForestBoundaryMap />
+          </CardContent>
+        </Card>
+        <div className="lg:col-span-1 space-y-6">
+          <CommitteeWidget />
+          <CommitteeQuotaWidget />
+        </div>
+      </div>
     </div>
   );
 }

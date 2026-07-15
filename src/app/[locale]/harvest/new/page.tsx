@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useCreateHarvestRequest, useListMembers, useListSpecies } from "@/lib/api";
+import { useCreateHarvestRequest, useListSpecies } from "@/lib/api";
+import MemberSelect  from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,6 @@ function HarvestRequestNew() {
   const { user } = useAuthStore();
   const isMemberRole = user?.role === "member";
 
-  const { data: members } = useListMembers({ membership_status: "active", limit: 100 });
   const { data: species } = useListSpecies({ limit: 100 });
 
   const form = useForm<FormValues>({
@@ -154,14 +154,13 @@ function HarvestRequestNew() {
                 <FormField control={form.control} name="member" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Member</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Select an active member" /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        {members?.results.map((m) => (
-                          <SelectItem key={m.id} value={String(m.id)}>{m.full_name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <MemberSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select an active member"
+                      />
+                    </FormControl>
                     <FormDescription>Only active members can submit harvest requests.</FormDescription>
                     <FormMessage />
                   </FormItem>

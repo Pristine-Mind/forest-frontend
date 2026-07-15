@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useCreateFeeCollection, useListMembers } from "@/lib/api";
+import { useCreateFeeCollection } from "@/lib/api";
+import MemberSelect from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +33,6 @@ function RecordFeeCollection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createFeeCollection = useCreateFeeCollection();
-  const { data: members } = useListMembers({ membership_status: "active", limit: 100 });
 
   const formSchema = z.object({
     member: z.string().optional(),
@@ -116,15 +116,15 @@ function RecordFeeCollection() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>{t("memberOptional")}</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder={t("selectMember")} /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="">{t("noMember")}</SelectItem>
-                        {members?.results.map((m) => (
-                          <SelectItem key={m.id} value={String(m.id)}>{m.full_name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <MemberSelect
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder={t("selectMember")}
+                        allowClear
+                        clearLabel={t("noMember")}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

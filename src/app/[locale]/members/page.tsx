@@ -208,6 +208,7 @@ function HouseholdsList() {
                     <TableRow>
                       <TableHead>{t("tableId")}</TableHead>
                       <TableHead>{t("tableHeadOfHousehold")}</TableHead>
+                      <TableHead>{t("tableNameInEnglish")}</TableHead>
                       <TableHead>Photo</TableHead>
                       <TableHead>Citizenship No.</TableHead>
                       <TableHead>Contact Number</TableHead>
@@ -236,6 +237,7 @@ function HouseholdsList() {
                       <TableRow key={h.id}>
                         <TableCell className="font-medium">{h.id}</TableCell>
                         <TableCell>{h.household_head_name}</TableCell>
+                        <TableCell>{h.english_name || "—"}</TableCell>
                         <TableCell>
                           {h.photo ? (
                             <img src={h.photo} alt={h.household_head_name} className="w-12 h-12 rounded-full object-cover" />

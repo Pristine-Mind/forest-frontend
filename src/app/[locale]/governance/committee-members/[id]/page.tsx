@@ -6,14 +6,19 @@ import { Link } from "@/i18n/routing";
 import { useRouter } from "@/i18n/routing";
 import {
   useGetCommitteeMember,
-  useUpdateCommitteeMember,
   useDeleteCommitteeMember,
 } from "@/lib/api";
+import {
+  CommitteeMemberWithPhoto,
+  useUpdateCommitteeMemberWithPhoto,
+} from "@/lib/api/committee";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
@@ -38,6 +43,16 @@ function formatDate(value?: string | null) {
   return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
 }
 
+function getInitials(name?: string | null): string {
+  if (!name) return "?";
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 function CommitteeMemberDetail({ id }: { id: number }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -46,40 +61,62 @@ function CommitteeMemberDetail({ id }: { id: number }) {
   const canWrite = can(WRITE_ROLES);
 
   const { data: cm, isLoading } = useGetCommitteeMember(id);
-  const updateMember = useUpdateCommitteeMember();
+  const updateMember = useUpdateCommitteeMemberWithPhoto();
   const deleteMember = useDeleteCommitteeMember();
 
   const [position, setPosition] = useState<string>("member");
   const [status, setStatus] = useState<string>("active");
+  const [photo, setPhoto] = useState<File | undefined>(undefined);
+  const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const member = cm as CommitteeMemberWithPhoto | undefined;
+
   // Update state when data loads
   useEffect(() => {
-    if (cm && !isInitialized) {
-      console.log("Setting position to:", cm.position);
-      console.log("Setting status to:", cm.status);
-      setPosition(cm.position);
-      setStatus(cm.status);
+    if (member && !isInitialized) {
+      setPosition(member.position);
+      setStatus(member.status);
+      setPhotoPreview(member.photo ?? undefined);
       setIsInitialized(true);
     }
-  }, [cm, isInitialized]);
+  }, [member, isInitialized]);
 
   if (isLoading) return <div>Loading...</div>;
-  if (!cm) return <div>Committee member not found.</div>;
+  if (!member) return <div>Committee member not found.</div>;
+
+  function handlePhotoChange(file?: File) {
+    setPhoto(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPhotoPreview(url);
+    } else {
+      setPhotoPreview(member?.photo ?? undefined);
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
+    const data: { position: any; status: any; photo?: File } = {
+      position: position as any,
+      status: status as any,
+    };
+    if (photo) {
+      data.photo = photo;
+    }
+
     updateMember.mutate(
-      { id, data: { position: position as any, status: status as any } },
+      { id, data },
       {
         onSuccess: () => {
           toast({ title: "Committee member updated" });
           queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/"] });
           queryClient.invalidateQueries({ queryKey: [`/api/v1/governance/committee-members/${id}/`] });
           queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
+          setPhoto(undefined);
           setIsSubmitting(false);
         },
         onError: () => {
@@ -111,9 +148,17 @@ function CommitteeMemberDetail({ id }: { id: number }) {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{cm.member_name}</h1>
-          <p className="text-muted-foreground mt-2">{POSITION_LABELS[cm.position] ?? cm.position}</p>
+        <div className="flex items-center gap-4">
+          <Avatar className="h-16 w-16 border">
+            {member.photo && <AvatarImage src={member.photo} alt={member.member_name ?? ""} />}
+            <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
+              {getInitials(member.member_name)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{member.member_name}</h1>
+            <p className="text-muted-foreground mt-1">{POSITION_LABELS[member.position] ?? member.position}</p>
+          </div>
         </div>
         <Button variant="outline" asChild>
           <Link href="/governance/committee-members">Back to Members</Link>
@@ -126,40 +171,56 @@ function CommitteeMemberDetail({ id }: { id: number }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Gender</p>
-              <p className="capitalize">{cm.gender}</p>
+              <p className="capitalize">{member.gender}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Caste / Ethnicity</p>
-              <p>{cm.caste_ethnicity || "—"}</p>
+              <p>{member.caste_ethnicity || "—"}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Term Start</p>
-              <p>{formatDate(cm.term_start)}</p>
+              <p>{formatDate(member.term_start)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Term End</p>
-              <p>{formatDate(cm.term_end)}</p>
+              <p>{formatDate(member.term_end)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <Badge variant={STATUS_VARIANT[cm.status] ?? "secondary"} className="capitalize">
-                {cm.status}
+              <Badge variant={STATUS_VARIANT[member.status] ?? "secondary"} className="capitalize">
+                {member.status}
               </Badge>
             </div>
           </div>
 
           {canWrite && (
             <form onSubmit={handleSubmit} className="space-y-4 border-t pt-6">
-              <h3 className="text-lg font-medium">Update Position / Status</h3>
-              
+              <h3 className="text-lg font-medium">Update Position / Status / Photo</h3>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Photo</label>
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-14 w-14 border">
+                    {photoPreview && <AvatarImage src={photoPreview} alt={member.member_name ?? ""} />}
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {getInitials(member.member_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handlePhotoChange(e.target.files?.[0])}
+                    className="max-w-xs"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Position (पद)</label>
-                <Select 
-                  value={position} 
+                <Select
+                  value={position}
                   onValueChange={(value) => {
-                    // Only update if value is not empty
                     if (value && value.trim() !== "") {
-                      console.log("Position changed to:", value);
                       setPosition(value);
                     }
                   }}
@@ -179,12 +240,10 @@ function CommitteeMemberDetail({ id }: { id: number }) {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <Select 
-                  value={status} 
+                <Select
+                  value={status}
                   onValueChange={(value) => {
-                    // Only update if value is not empty
                     if (value && value.trim() !== "") {
-                      console.log("Status changed to:", value);
                       setStatus(value);
                     }
                   }}
@@ -204,10 +263,10 @@ function CommitteeMemberDetail({ id }: { id: number }) {
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Saving..." : "Save Changes"}
                 </Button>
-                <Button 
-                  type="button" 
-                  variant="destructive" 
-                  onClick={handleDelete} 
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
                   disabled={deleteMember.isPending}
                 >
                   {deleteMember.isPending ? "Removing..." : "Remove"}

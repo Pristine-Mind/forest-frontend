@@ -6,7 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-import { useRecordSale, useListSpecies, useListMembers, useListPriceRates } from "@/lib/api";
+import { useRecordSale, useListSpecies, useListPriceRates } from "@/lib/api";
+import MemberSelect  from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  buyer_name: z.string().min(1, "Buyer name is required"),
+  buyer_name: z.string().optional(),
   buyer_type: z.enum(["member", "outsider"]),
   member: z.string().optional(),
   species: z.string().min(1, "Species is required"),
@@ -42,7 +43,6 @@ function RecordSale() {
   const [rateManuallyEdited, setRateManuallyEdited] = useState(false);
 
   const { data: species } = useListSpecies({ limit: 100 });
-  const { data: members } = useListMembers({ membership_status: "active", limit: 100 });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -168,14 +168,13 @@ function RecordSale() {
                   <FormField control={form.control} name="member" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Member</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {members?.results.map((m) => (
-                            <SelectItem key={m.id} value={String(m.id)}>{m.full_name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <MemberSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="Select member"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
