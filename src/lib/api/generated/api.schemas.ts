@@ -249,6 +249,7 @@ export interface Member {
   /** @nullable */
   user_email?: string | null;
   full_name: string;
+  full_name_en: string;
   citizenship_no: string;
   membership_type: MemberMembershipType;
   membership_status: MemberMembershipStatus;
@@ -302,6 +303,7 @@ export interface MemberInput {
   /** @nullable */
   user?: number | null;
   full_name: string;
+  full_name_en: string;
 }
 
 export type MemberUpdateMembershipType = typeof MemberUpdateMembershipType[keyof typeof MemberUpdateMembershipType];

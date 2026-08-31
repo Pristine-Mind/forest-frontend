@@ -36,6 +36,7 @@ function MemberEditInner({ id }: { id: number }) {
 
   const formSchema = z.object({
     full_name: z.string().min(1, tForms("required")),
+    full_name_en: z.string().min(1, tForms("required")),
     relation: z.string().min(1, tForms("required")),
     photo: z.instanceof(File).optional(),
   });
@@ -46,6 +47,7 @@ function MemberEditInner({ id }: { id: number }) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       full_name: "",
+      full_name_en: "",
       relation: "",
       photo: undefined,
     },
@@ -56,6 +58,7 @@ function MemberEditInner({ id }: { id: number }) {
     if (member) {
       form.reset({
         full_name: member.full_name,
+        full_name_en: member.full_name_en || "",
         relation: member.relation || "",
         photo: undefined,
       });
@@ -70,6 +73,7 @@ function MemberEditInner({ id }: { id: number }) {
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('full_name', values.full_name);
+      formData.append('full_name_en', values.full_name_en);
       formData.append('relation', values.relation);
       
       // Only append photo if a new file was selected
@@ -152,6 +156,15 @@ function MemberEditInner({ id }: { id: number }) {
                   <FormMessage />
                 </FormItem>
               )} />
+              <FormField control={form.control} name="full_name_en" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("fullNameEn")}</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
               
               <FormField control={form.control} name="relation" render={({ field }) => (
                 <FormItem>
@@ -165,7 +178,7 @@ function MemberEditInner({ id }: { id: number }) {
               
               <FormField control={form.control} name="photo" render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
-                  <FormLabel>Photo</FormLabel>
+                  <FormLabel>{t("photo") || "Photo"}</FormLabel>
                   <FormControl>
                     <div className="space-y-2">
                       <Input 

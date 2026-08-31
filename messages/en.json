@@ -233,7 +233,17 @@
       "paymentType": "Payment Type",
       "paymentTypeCash": "Cash",
       "paymentTypeCheque": "Cheque",
-      "paymentTypeDigitalWallet": "Digital Wallet"
+      "paymentTypeDigitalWallet": "Digital Wallet",
+      "feeTypePenalty": "Penalty",
+      "feeTypeWormCompost": "Worm Compost",
+      "feeTypeArrearsCollection": "Arrears Collection",
+      "feeTypeWildgrass": "Wildgrass",
+      "feeTypeBidDocument": "Bid Document",
+      "feeTypeHallRent": "Hall Rent",
+      "feeTypeCanedBamboo": "Caned Bamboo",
+      "feeTypeForestProducts": "Forest Products",
+      "feeTypeDeposit": "Deposit",
+      "feeCollections": "Billing - Fee Collections"
     },
     "receipts": {
       "title": "Receipts",
@@ -922,6 +932,7 @@
     "addMember": "Add Member",
     "loadingMembers": "Loading members...",
     "tableName": "Name",
+    "tableNameEn": "English Name",
     "tableCitizenshipNo": "Citizenship No.",
     "tableType": "Type",
     "tableJoined": "Joined",
@@ -953,6 +964,7 @@
       "tableStatus": "Status",
       "empty": "No members found.",
       "newTitle": "Add Member",
+      "fullNameEn": "English Name",
       "addingToHousehold": "Adding a member to {name}'s household.",
       "addingMember": "Adding a member.",
       "formTitle": "Member Details",
@@ -982,7 +994,8 @@
       "toastUpdated": "Member updated successfully",
       "toastUpdateFailed": "Failed to update member",
       "toastUpdateFailedDesc": "Please check the form and try again.",
-      "notFound": "Member not found."
+      "notFound": "Member not found.",
+      "photo": "Photo"
     }
   },
   "offense": {

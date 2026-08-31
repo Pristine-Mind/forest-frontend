@@ -23,6 +23,15 @@ const FEE_TYPE_KEYS: Record<string, string> = {
   royalty: "feeTypeRoyalty",
   visitor_entry: "feeTypeVisitorEntry",
   other: "feeTypeOther",
+  penalty: "feeTypePenalty",
+  worm_compost: "feeTypeWormCompost",
+  arrears_collection: "feeTypeArrearsCollection",
+  wildgrass: "feeTypeWildgrass",
+  bid_document: "feeTypeBidDocument",
+  hall_rent: "feeTypeHallRent",
+  caned_bamboo: "feeTypeCanedBamboo",
+  forest_products: "feeTypeForestProducts",
+  deposit: "feeTypeDeposit",
 };
 
 function RecordFeeCollection() {
@@ -36,7 +45,7 @@ function RecordFeeCollection() {
 
   const formSchema = z.object({
     member: z.string().optional(),
-    fee_type: z.enum(["membership", "renewal", "royalty", "visitor_entry", "other"]),
+    fee_type: z.enum(["membership", "renewal", "royalty", "visitor_entry", "other", "penalty", "worm_compost", "arrears_collection", "wildgrass", "bid_document", "hall_rent", "caned_bamboo", "forest_products", "deposit" ]),
     amount: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) > 0, tForms("positiveNumber")),
     amount_paid: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) >= 0, tForms("required")),
     description: z.string().optional(),
@@ -144,6 +153,15 @@ function RecordFeeCollection() {
                         <SelectItem value="royalty">{t("feeTypeRoyalty")}</SelectItem>
                         <SelectItem value="visitor_entry">{t("feeTypeVisitorEntry")}</SelectItem>
                         <SelectItem value="other">{t("feeTypeOther")}</SelectItem>
+                        <SelectItem value="penalty">{t("feeTypePenalty")}</SelectItem>
+                        <SelectItem value="worm_compost">{t("feeTypeWormCompost")}</SelectItem>
+                        <SelectItem value="arrears_collection">{t("feeTypeArrearsCollection")}</SelectItem>
+                        <SelectItem value="wildgrass">{t("feeTypeWildgrass")}</SelectItem>
+                        <SelectItem value="bid_document">{t("feeTypeBidDocument")}</SelectItem>
+                        <SelectItem value="hall_rent">{t("feeTypeHallRent")}</SelectItem>
+                        <SelectItem value="caned_bamboo">{t("feeTypeCanedBamboo")}</SelectItem>
+                        <SelectItem value="forest_products">{t("feeTypeForestProducts")}</SelectItem>
+                        <SelectItem value="deposit">{t("feeTypeDeposit")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

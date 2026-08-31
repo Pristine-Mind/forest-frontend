@@ -173,6 +173,7 @@ function MemberDetail({ id }: { id: number }) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("tableName")}</TableHead>
+                    <TableHead>{t("tableNameEn")}</TableHead>
                     <TableHead>Photo</TableHead>
                     <TableHead>Relation</TableHead>
                   </TableRow>
@@ -181,6 +182,7 @@ function MemberDetail({ id }: { id: number }) {
                   {members?.results.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.full_name}</TableCell>
+                      <TableCell className="font-medium">{m.full_name_en || "N/A"}</TableCell>
                       <TableCell>
                         {(m as any).member_photo ? (
                           <img src={(m as any).member_photo} alt={m.full_name} className="w-12 h-12 rounded-full object-cover" />
