@@ -40,7 +40,7 @@ function PriceRateList() {
                   <TableHead>Species</TableHead>
                   <TableHead>Grade</TableHead>
                   <TableHead>Buyer Type</TableHead>
-                  <TableHead className="text-right">Rate / Unit</TableHead>
+                  <TableHead className="text-right">Total Rate / Unit</TableHead>
                   <TableHead>Effective From</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -51,7 +51,7 @@ function PriceRateList() {
                     <TableCell>{r.species_name}</TableCell>
                     <TableCell>{r.grade}</TableCell>
                     <TableCell className="capitalize">{r.buyer_type}</TableCell>
-                    <TableCell className="text-right font-mono">{r.rate_per_unit}</TableCell>
+                    <TableCell className="text-right font-mono">{r.total_rate_per_unit}</TableCell>
                     <TableCell>{formatDate(r.effective_from)}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" asChild><Link href={`/inventory/price-rates/${r.id}`}>Edit</Link></Button>

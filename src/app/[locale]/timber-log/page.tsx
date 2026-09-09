@@ -80,7 +80,7 @@ const timberLogEntrySchema = z.object({
   sawn_volume_cft: z.coerce.number().min(0, "Must be 0 or greater").optional(),
   wastage_percent: z.coerce.number().min(0, "Wastage must be 0 or greater"),
   net_volume_cft: z.coerce.number().min(0, "Net volume must be 0 or greater").optional(),
-  grade: z.enum(["A", "B", "C"], {
+  grade: z.enum(["A", "B", "C", "D"], {
     required_error: "Grade is required",
   }),
 });
@@ -186,6 +186,7 @@ function TimberLogEntryForm({
                     <SelectItem value="A">A</SelectItem>
                     <SelectItem value="B">B</SelectItem>
                     <SelectItem value="C">C</SelectItem>
+                    <SelectItem value="D">D</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -723,6 +724,7 @@ function TimberLogEntriesContent() {
                 <SelectItem value="A">Grade A</SelectItem>
                 <SelectItem value="B">Grade B</SelectItem>
                 <SelectItem value="C">Grade C</SelectItem>
+                <SelectItem value="D">Grade D</SelectItem>
               </SelectContent>
             </Select>
             {canWrite && (

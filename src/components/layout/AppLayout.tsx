@@ -8,7 +8,7 @@ import { useLogout } from "@/lib/api";
 import {
   Trees, Users, Sprout, Axe, Package,
   Map, ReceiptText, ShieldCheck, Banknote,
-  Leaf, Gavel, BarChart3, LogOut, Menu, Settings2, FileText
+  Leaf, Gavel, BarChart3, LogOut, Menu, Settings2, FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { href: "/livelihood", labelKey: "livelihood", icon: Leaf },
   { href: "/offense", labelKey: "offenseTracking", icon: Gavel },
   { href: "/bank-transactions", labelKey: "bank-transactions", icon: Banknote },
+  { href: "/forest-product-receipts", labelKey: "forestProductsReceipts", icon: Axe },
   { href: "/timber-log", labelKey: "timber-log", icon: Trees },
   { href: "/reports", labelKey: "reports", icon: BarChart3 },
   { href: "/settings", labelKey: "settings", icon: Settings2 },

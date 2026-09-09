@@ -33,13 +33,13 @@ export default function FormsPage() {
       href: `/${locale}/forms/felling-register`,
       color: "bg-yellow-50",
     },
-    {
-      title: "Forest Product Receipts",
-      description: "Create and manage forest product receipts with multiple receipt items",
-      icon: Clipboard,
-      href: `/${locale}/forms/forest-product-receipts`,
-      color: "bg-purple-50",
-    },
+    // {
+    //   title: "Forest Product Receipts",
+    //   description: "Create and manage forest product receipts with multiple receipt items",
+    //   icon: Clipboard,
+    //   href: `/${locale}/forms/forest-product-receipts`,
+    //   color: "bg-purple-50",
+    // },
   ];
 
   return (

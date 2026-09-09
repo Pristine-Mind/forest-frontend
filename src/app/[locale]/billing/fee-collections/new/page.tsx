@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -47,11 +48,14 @@ function RecordFeeCollection() {
     member: z.string().optional(),
     fee_type: z.enum(["membership", "renewal", "royalty", "visitor_entry", "other", "penalty", "worm_compost", "arrears_collection", "wildgrass", "bid_document", "hall_rent", "caned_bamboo", "forest_products", "deposit" ]),
     amount: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) > 0, tForms("positiveNumber")),
-    amount_paid: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) >= 0, tForms("required")),
+    amount_paid: z.string().min(1, tForms("optional")).refine((v) => !isNaN(Number(v)) && Number(v) >= 0, tForms("required")),
     description: z.string().optional(),
+    quantity: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) > 0, tForms("positiveNumber")),
+    rate: z.string().min(1, tForms("required")).refine((v) => !isNaN(Number(v)) && Number(v) > 0, tForms("positiveNumber")),
     payment_type: z.enum(["cash", "cheque", "digital_wallet"]).default("cash"),
     cheque_number: z.string().optional(),
     cheque_bank_name: z.string().optional(),
+    remarks: z.string().optional(),
   }).refine(
     (data) => {
       if (data.payment_type === "cheque") {
@@ -75,11 +79,24 @@ function RecordFeeCollection() {
       amount: "",
       amount_paid: "",
       description: "",
+      quantity: "",
+      rate: "",
       payment_type: "cash",
       cheque_number: "",
       cheque_bank_name: "",
+      remarks: "",
     },
   });
+
+  const quantity = form.watch("quantity");
+  const rate = form.watch("rate");
+
+  useEffect(() => {
+    if (quantity && rate) {
+      const total = (Number(quantity) * Number(rate)).toFixed(2);
+      form.setValue("amount", total);
+    }
+  }, [quantity, rate, form]);
 
   function onSubmit(values: FormValues) {
     createFeeCollection.mutate(
@@ -90,9 +107,12 @@ function RecordFeeCollection() {
           amount: values.amount,
           amount_paid: values.amount_paid,
           description: values.description || undefined,
+          quantity: values.quantity,
+          rate: values.rate,
           payment_type: values.payment_type,
           cheque_number: values.payment_type === "cheque" ? values.cheque_number : undefined,
           cheque_bank_name: values.payment_type === "cheque" ? values.cheque_bank_name : undefined,
+          remarks: values.remarks || undefined,
         },
       },
       {
@@ -168,15 +188,38 @@ function RecordFeeCollection() {
                   </FormItem>
                 )}
               />
+              
 
               <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("quantity")}</FormLabel>
+                      <FormControl><Input type="number" min={1} step="1" inputMode="numeric" placeholder={t("quantityPlaceholder")} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("rate")}</FormLabel>
+                      <FormControl><Input type="number" min={0.01} step="0.01" inputMode="decimal" placeholder={t("ratePlaceholder")} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t("totalAmount")}</FormLabel>
-                      <FormControl><Input type="number" min={0.01} step="0.01" inputMode="decimal" {...field} /></FormControl>
+                      <FormControl><Input type="number" min={0.01} step="0.01" inputMode="decimal" disabled {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -205,7 +248,17 @@ function RecordFeeCollection() {
                   </FormItem>
                 )}
               />
-
+              <FormField
+                control={form.control}
+                name="remarks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("remarks")}</FormLabel>
+                    <FormControl><Textarea placeholder={t("remarksPlaceholder")} {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="payment_type"

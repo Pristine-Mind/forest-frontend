@@ -23,6 +23,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { PhotoUploadInput } from "@/components/ui/photo-upload-input";
 
 function MemberNew() {
   const t = useTranslations("members");
@@ -321,10 +322,7 @@ function MemberNew() {
                   <FormItem>
                     <FormLabel>Household Head Photo</FormLabel>
                     <FormControl>
-                      <div className="space-y-2">
-                        <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} {...field} />
-                        {value && <div className="text-sm text-muted-foreground">Selected: {value.name}</div>}
-                      </div>
+                      <PhotoUploadInput value={value} onChange={onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

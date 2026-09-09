@@ -24,7 +24,7 @@ function ReceiptDetail({ id }: { id: number }) {
       {/* Screen controls — hidden when printing */}
       <div className="flex items-center justify-between print:hidden">
         <Button variant="outline" asChild>
-          <Link href="/forms/forest-product-receipts">Back to Receipts</Link>
+          <Link href="/forest-product-receipts">Back to Receipts</Link>
         </Button>
         <Button onClick={() => window.print()}>
           <Printer className="h-4 w-4 mr-2" /> Print Receipt

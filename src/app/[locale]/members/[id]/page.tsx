@@ -80,7 +80,7 @@ function MemberDetail({ id }: { id: number }) {
           <Button variant="outline" asChild>
             <Link href={`/members/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              Edit / Renew
             </Link>
           </Button>
           <Button variant="destructive" onClick={() => setDeleteHouseholdOpen(true)}>
