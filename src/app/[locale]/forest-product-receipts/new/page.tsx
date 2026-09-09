@@ -123,7 +123,7 @@ function ForestProductReceiptNew() {
         onSuccess: (data) => {
           toast({ title: "Receipt created successfully" });
           queryClient.invalidateQueries({ queryKey: ["forestProductReceipts"] });
-          router.push(`/forms/forest-product-receipts/${data.id}`);
+          router.push(`/forest-product-receipts/${data.id}`);
         },
         onError: (error: any) => {
           const detail = error?.response?.data?.receipt_no?.[0] ?? error?.response?.data?.detail;
@@ -343,7 +343,7 @@ function ForestProductReceiptNew() {
         <Button onClick={handleSubmit} disabled={createReceipt.isPending}>
           {createReceipt.isPending ? "Creating..." : "Create Receipt"}
         </Button>
-        <Button variant="outline" onClick={() => router.push("/forms/forest-product-receipts")}>
+        <Button variant="outline" onClick={() => router.push("/forest-product-receipts")}>
           Cancel
         </Button>
       </div>

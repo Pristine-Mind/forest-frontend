@@ -19,6 +19,7 @@ const formSchema = z.object({
   grade: z.string().min(1, "Grade is required"),
   buyer_type: z.enum(["member", "outsider"]),
   rate_per_unit: z.string().min(1, "Rate is required").refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Must be a positive number"),
+  collection_per_unit: z.string().min(1, "Collection is required").refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Must be a positive number"),
   effective_from: z.string().min(1, "Effective date is required"),
 });
 
@@ -36,6 +37,7 @@ function PriceRateNew() {
     defaultValues: {
       species: "", grade: "", buyer_type: "outsider",
       rate_per_unit: "", effective_from: new Date().toISOString().split("T")[0],
+      collection_per_unit: "",
     },
   });
 
@@ -87,7 +89,21 @@ function PriceRateNew() {
               )} />
               <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="grade" render={({ field }) => (
-                  <FormItem><FormLabel>Grade</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem>
+                    <FormLabel>Grade</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="A">A</SelectItem>
+                        <SelectItem value="B">B</SelectItem>
+                        <SelectItem value="C">C</SelectItem>
+                        <SelectItem value="D">D</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )} />
                 <FormField control={form.control} name="buyer_type" render={({ field }) => (
                   <FormItem>
@@ -107,6 +123,13 @@ function PriceRateNew() {
                 <FormField control={form.control} name="rate_per_unit" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Rate per Unit</FormLabel>
+                    <FormControl><Input type="number" min={0.01} step="0.01" inputMode="decimal" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="collection_per_unit" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collection per Unit</FormLabel>
                     <FormControl><Input type="number" min={0.01} step="0.01" inputMode="decimal" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>

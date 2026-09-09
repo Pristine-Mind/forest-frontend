@@ -84,7 +84,7 @@ function RecordSale() {
 
   useEffect(() => {
     if (!rateManuallyEdited && suggestedRate) {
-      form.setValue("rate_applied", suggestedRate.rate_per_unit);
+      form.setValue("rate_applied", suggestedRate.total_rate_per_unit);
     }
   }, [suggestedRate, rateManuallyEdited]);
 
@@ -94,7 +94,7 @@ function RecordSale() {
   }, [watchedSpecies, watchedGrade, watchedBuyerType]);
 
   const previewTotal = (Number(watchedQuantity || 0) * Number(watchedRate || 0)).toFixed(2);
-  const rateDiffersFromSuggestion = suggestedRate && watchedRate !== suggestedRate.rate_per_unit;
+  const rateDiffersFromSuggestion = suggestedRate && watchedRate !== suggestedRate.total_rate_per_unit;
 
   function onSubmit(values: FormValues) {
     if (rateDiffersFromSuggestion && !values.audit_note?.trim()) {
@@ -112,6 +112,7 @@ function RecordSale() {
           grade: values.grade,
           quantity: values.quantity,
           rate_applied: values.rate_applied,
+          total_rate_per_unit: values.rate_applied,
           payment_status: values.payment_status,
           audit_note: values.audit_note || undefined,
         },
@@ -199,14 +200,25 @@ function RecordSale() {
               <FormField control={form.control} name="grade" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grade</FormLabel>
-                  <FormControl>
-                    <>
-                      <Input list="grade-options" placeholder="e.g. A, B, Sawn timber" {...field} />
-                      <datalist id="grade-options">
-                        {gradeOptions.map((g) => <option key={g} value={g} />)}
-                      </datalist>
-                    </>
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {gradeOptions.length > 0 ? (
+                        gradeOptions.map((g) => (
+                          <SelectItem key={g} value={g}>{g}</SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="A">A</SelectItem>
+                          <SelectItem value="B">B</SelectItem>
+                          <SelectItem value="C">C</SelectItem>
+                          <SelectItem value="D">D</SelectItem>
+                        </>
+                      )}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )} />

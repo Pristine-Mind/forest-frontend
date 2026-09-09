@@ -82,7 +82,17 @@ function StockLedgerNew() {
               <FormField control={form.control} name="grade" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grade</FormLabel>
-                  <FormControl><Input placeholder="e.g. A, B, Sawn timber" {...field} /></FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Select grade" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="A">A</SelectItem>
+                      <SelectItem value="B">B</SelectItem>
+                      <SelectItem value="C">C</SelectItem>
+                      <SelectItem value="D">D</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormDescription>Available quantity starts at 0 and is tracked via stock transactions.</FormDescription>
                   <FormMessage />
                 </FormItem>

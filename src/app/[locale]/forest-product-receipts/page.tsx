@@ -26,7 +26,7 @@ function ForestProductReceiptList() {
           <p className="text-muted-foreground mt-2">अनुसुचि-१० — Forest Product Sales Distribution Receipts</p>
         </div>
         {can(WRITE_ROLES) && (
-          <Button asChild><Link href="/forms/forest-product-receipts/new">New Receipt</Link></Button>
+          <Button asChild><Link href="/forest-product-receipts/new">New Receipt</Link></Button>
         )}
       </div>
 
@@ -52,10 +52,10 @@ function ForestProductReceiptList() {
                     <TableCell className="text-right font-mono">NPR {r.grand_total}</TableCell>
                     <TableCell className="flex gap-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/forms/forest-product-receipts/${r.id}`}>View</Link>
+                        <Link href={`/forest-product-receipts/${r.id}`}>View</Link>
                       </Button>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/forms/forest-product-receipts/${r.id}/print`}>Print</Link>
+                        <Link href={`/forest-product-receipts/${r.id}/print`}>Print</Link>
                       </Button>
                     </TableCell>
                   </TableRow>

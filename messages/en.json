@@ -15,7 +15,8 @@
     "reports": "Reports",
     "settings": "Settings",
     "bank-transactions": "Bank Transactions",
-    "timber-log": "Timber Log"
+    "timber-log": "Timber Log",
+    "forestProductsReceipts": "Forest Product Receipts"
   },
   "auth": {
     "login": "Login",
@@ -243,7 +244,15 @@
       "feeTypeCanedBamboo": "Caned Bamboo",
       "feeTypeForestProducts": "Forest Products",
       "feeTypeDeposit": "Deposit",
-      "feeCollections": "Billing - Fee Collections"
+      "feeCollections": "Billing - Fee Collections",
+      "remarks": "Remarks",
+      "remarksPlaceholder": "Optional remarks about this payment",
+      "quantity": "Quantity",
+      "quantityPlaceholder": "Enter the quantity",
+      "rate": "Rate",
+      "ratePlaceholder": "Enter the rate",
+      "amount": "Total Amount",
+      "amountPlaceholder": "Enter the total amount"
     },
     "receipts": {
       "title": "Receipts",
@@ -953,7 +962,7 @@
     "showing": "Showing",
     "of": "of",
     "total": "total",
-    "householdUpdate": "Household Updated Successfully",
+    "householdUpdated": "Household Updated Successfully",
     "people": {
       "title": "People",
       "subtitle": "All registered individuals in the CFUG.",

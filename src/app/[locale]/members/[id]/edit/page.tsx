@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { use } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { useEffect } from "react";
+import { PhotoUploadInput } from "@/components/ui/photo-upload-input";
 
 function HouseholdEdit({ id }: { id: number }) {
   const t = useTranslations("members");
@@ -354,10 +355,7 @@ function HouseholdEdit({ id }: { id: number }) {
                   <FormItem>
                     <FormLabel>Household Head Photo</FormLabel>
                     <FormControl>
-                      <div className="space-y-2">
-                        <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} {...field} />
-                        {value && <div className="text-sm text-muted-foreground">Selected: {value.name}</div>}
-                      </div>
+                      <PhotoUploadInput value={value} onChange={onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

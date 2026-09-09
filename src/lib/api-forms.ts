@@ -1019,7 +1019,7 @@ export interface TimberLogEntryPayload {
   sawn_volume_cft?: number;
   wastage_percent: number;
   net_volume_cft?: number;
-  grade: "A" | "B" | "C";
+  grade: "A" | "B" | "C" | "D";
 }
 
 export interface TimberLogEntryResponse extends TimberLogEntryPayload {
