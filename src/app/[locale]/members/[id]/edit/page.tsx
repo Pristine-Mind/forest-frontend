@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { use } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PhotoUploadInput } from "@/components/ui/photo-upload-input";
 
 function HouseholdEdit({ id }: { id: number }) {
@@ -38,6 +38,7 @@ function HouseholdEdit({ id }: { id: number }) {
   const queryClient = useQueryClient();
   const updateHousehold = useUpdateHousehold();
   const { data: household, isLoading } = useGetHousehold(id);
+  const [existingPhotoUrl, setExistingPhotoUrl] = useState<string>("");
 
   const formSchema = z.object({
     household_head_name: z.string().min(1, tForms("required")),
@@ -95,6 +96,7 @@ function HouseholdEdit({ id }: { id: number }) {
   // Reset form when household data loads
   useEffect(() => {
     if (household) {
+      setExistingPhotoUrl(household.photo || "");
       form.reset({
         household_head_name: household.household_head_name,
         english_name: household.english_name || "",
@@ -355,7 +357,17 @@ function HouseholdEdit({ id }: { id: number }) {
                   <FormItem>
                     <FormLabel>Household Head Photo</FormLabel>
                     <FormControl>
-                      <PhotoUploadInput value={value} onChange={onChange} />
+                      <div className="space-y-4">
+                        <PhotoUploadInput value={value} onChange={onChange} initialPreview={existingPhotoUrl} />
+                        {!value && existingPhotoUrl && (
+                          <div className="text-sm text-muted-foreground">
+                            Current photo: <a href={existingPhotoUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a>
+                          </div>
+                        )}
+                        <div className="text-xs text-muted-foreground">
+                          Leave empty to keep current photo
+                        </div>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

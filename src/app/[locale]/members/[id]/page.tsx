@@ -98,7 +98,7 @@ function MemberDetail({ id }: { id: number }) {
           <CardHeader><CardTitle>{t("householdInfo")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p>{household.photo ? <img src={household.photo} alt={household.household_head_name} className="w-12 h-12 rounded-full object-cover" /> : <span className="text-muted-foreground">No Photo</span> }</p>
+              <p>{(household as any).photo ? <img src={(household as any).photo} alt={household.household_head_name} className="w-12 h-12 rounded-full object-cover" /> : <span className="text-muted-foreground">No Photo</span> }</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">{t("tole")}</p>
@@ -182,7 +182,7 @@ function MemberDetail({ id }: { id: number }) {
                   {members?.results.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.full_name}</TableCell>
-                      <TableCell className="font-medium">{m.full_name_en || "N/A"}</TableCell>
+                      <TableCell className="font-medium">N/A</TableCell>
                       <TableCell>
                         {(m as any).member_photo ? (
                           <img src={(m as any).member_photo} alt={m.full_name} className="w-12 h-12 rounded-full object-cover" />
@@ -190,13 +190,13 @@ function MemberDetail({ id }: { id: number }) {
                           <span className="text-muted-foreground">No Photo</span>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{(m as any).relation || "N/A"}</TableCell>
+                      <TableCell className="font-medium">{m.relation || "N/A"}</TableCell>
 
                       <TableCell>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" asChild>
+                          {/* <Button variant="outline" size="sm" asChild>
                             <Link href={`/members/people/${m.id}`}>{t("view")}</Link>
-                          </Button>
+                          </Button> */}
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/members/people/${m.id}/edit`}>
                               <Edit className="h-4 w-4" />

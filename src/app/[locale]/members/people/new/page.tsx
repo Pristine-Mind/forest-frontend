@@ -15,6 +15,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { PhotoUploadInput } from "@/components/ui/photo-upload-input";
 
 function MemberNewInner({ householdId }: { householdId: number }) {
   const t = useTranslations("members.people");
@@ -25,6 +27,7 @@ function MemberNewInner({ householdId }: { householdId: number }) {
   const queryClient = useQueryClient();
   const createMember = useCreateMember();
   const { data: household } = useGetHousehold(householdId);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const formSchema = z.object({
     full_name: z.string().min(1, tForms("required")),
@@ -97,10 +100,17 @@ function MemberNewInner({ householdId }: { householdId: number }) {
                 <FormItem>
                   <FormLabel>Photo</FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
-                      <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} {...field} />
-                      {value && <div className="text-sm text-muted-foreground">Selected: {value.name}</div>}
-                    </div>
+                    <PhotoUploadInput 
+                      value={value} 
+                      onChange={(file) => {
+                        if (file) {
+                          setPhotoFile(file);
+                        } else {
+                          setPhotoFile(null);
+                        }
+                        onChange(file);
+                      }} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

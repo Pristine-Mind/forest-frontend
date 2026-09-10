@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { PhotoUploadInput } from "@/components/ui/photo-upload-input";
 import { useEffect, useState } from "react";
 
 function MemberEditInner({ id }: { id: number }) {
@@ -33,12 +34,13 @@ function MemberEditInner({ id }: { id: number }) {
   
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [existingPhotoUrl, setExistingPhotoUrl] = useState<string>("");
 
   const formSchema = z.object({
     full_name: z.string().min(1, tForms("required")),
     full_name_en: z.string().min(1, tForms("required")),
     relation: z.string().min(1, tForms("required")),
-    photo: z.instanceof(File).optional(),
+    member_photo: z.instanceof(File).optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -49,18 +51,19 @@ function MemberEditInner({ id }: { id: number }) {
       full_name: "",
       full_name_en: "",
       relation: "",
-      photo: undefined,
+      member_photo: undefined,
     },
   });
 
   // Reset form when member data loads
   useEffect(() => {
     if (member) {
+      setExistingPhotoUrl(member.member_photo || "");
       form.reset({
         full_name: member.full_name,
         full_name_en: member.full_name_en || "",
         relation: member.relation || "",
-        photo: undefined,
+        member_photo: undefined,
       });
       setPhotoFile(null);
     }
@@ -176,30 +179,26 @@ function MemberEditInner({ id }: { id: number }) {
                 </FormItem>
               )} />
               
-              <FormField control={form.control} name="photo" render={({ field: { value, onChange, ...field } }) => (
+              <FormField control={form.control} name="member_photo" render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
-                  <FormLabel>{t("photo") || "Photo"}</FormLabel>
+                  <FormLabel>{t("memberPhoto") || "Member Photo"}</FormLabel>
                   <FormControl>
-                    <div className="space-y-2">
-                      <Input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
+                    <div className="space-y-4">
+                      <PhotoUploadInput 
+                        value={value} 
+                        onChange={(file) => {
                           if (file) {
                             setPhotoFile(file);
-                            onChange(file);
                           } else {
                             setPhotoFile(null);
-                            onChange(undefined);
                           }
+                          onChange(file);
                         }} 
-                        {...field} 
+                        initialPreview={existingPhotoUrl}
                       />
-                      {value && <div className="text-sm text-muted-foreground">Selected: {(value as File).name}</div>}
-                      {!value && member?.member_photo && (
+                      {!value && existingPhotoUrl && (
                         <div className="text-sm text-muted-foreground">
-                          Current photo: <a href={member.member_photo} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a>
+                          Current photo: <a href={existingPhotoUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View</a>
                         </div>
                       )}
                       <div className="text-xs text-muted-foreground">

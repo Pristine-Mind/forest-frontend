@@ -1004,7 +1004,8 @@
       "toastUpdateFailed": "Failed to update member",
       "toastUpdateFailedDesc": "Please check the form and try again.",
       "notFound": "Member not found.",
-      "photo": "Photo"
+      "photo": "Photo",
+      "memberPhoto": "Member Photo"
     }
   },
   "offense": {

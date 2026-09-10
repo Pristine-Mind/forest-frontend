@@ -1,25 +1,37 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Check } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface PhotoUploadInputProps {
   value?: File;
   onChange: (file: File | undefined) => void;
   disabled?: boolean;
+  initialPreview?: string;
 }
 
-export function PhotoUploadInput({ value, onChange, disabled }: PhotoUploadInputProps) {
-  const [preview, setPreview] = useState<string>("");
+export function PhotoUploadInput({ value, onChange, disabled, initialPreview }: PhotoUploadInputProps) {
+  const [preview, setPreview] = useState<string>(initialPreview || "");
+  const [capturedPreview, setCapturedPreview] = useState<string>("");
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const capturedFileRef = useRef<File | null>(null);
+
+  // Update preview when initialPreview changes and no new file is selected
+  useEffect(() => {
+    if (!value && initialPreview) {
+      setPreview(initialPreview);
+    }
+  }, [initialPreview, value]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -83,19 +95,34 @@ export function PhotoUploadInput({ value, onChange, disabled }: PhotoUploadInput
         canvasRef.current.toBlob((blob) => {
           if (blob) {
             const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
-            onChange(file);
+            capturedFileRef.current = file;
             
             const reader = new FileReader();
             reader.onload = (event) => {
-              setPreview(event.target?.result as string);
+              setCapturedPreview(event.target?.result as string);
+              setShowPreviewDialog(true);
             };
             reader.readAsDataURL(blob);
-
-            stopCamera();
           }
         }, "image/jpeg");
       }
     }
+  };
+
+  const confirmCapture = () => {
+    if (capturedFileRef.current) {
+      onChange(capturedFileRef.current);
+      setPreview(capturedPreview);
+      setShowPreviewDialog(false);
+      stopCamera();
+    }
+  };
+
+  const retakePhoto = () => {
+    setShowPreviewDialog(false);
+    setCapturedPreview("");
+    capturedFileRef.current = null;
+    // Camera stays active for retake
   };
 
   const clearPhoto = () => {
@@ -108,6 +135,43 @@ export function PhotoUploadInput({ value, onChange, disabled }: PhotoUploadInput
 
   return (
     <div className="space-y-4">
+      {/* Preview Dialog */}
+      <Dialog open={showPreviewDialog} onOpenChange={setShowPreviewDialog}>
+        <DialogContent className="max-w-md">
+          <DialogTitle>Confirm Photo</DialogTitle>
+          <DialogDescription>
+            Is this photo acceptable? Click Confirm to proceed or Retake to capture again.
+          </DialogDescription>
+          {capturedPreview && (
+            <div className="flex justify-center">
+              <img src={capturedPreview} alt="Captured" className="w-full rounded-lg border object-cover" />
+            </div>
+          )}
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="default"
+              onClick={confirmCapture}
+              disabled={disabled}
+              className="flex-1"
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Confirm
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={retakePhoto}
+              disabled={disabled}
+              className="flex-1"
+            >
+              <Camera className="mr-2 h-4 w-4" />
+              Retake
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Preview */}
       {preview && (
         <div className="relative inline-block">
