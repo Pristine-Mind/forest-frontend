@@ -4,3 +4,4 @@ export { setBaseUrl, setAuthTokenGetter, customFetch } from "./custom-fetch";
 export type { AuthTokenGetter } from "./custom-fetch";
 export * from "../api-forms";
 export * from "./members";
+export * from "../api-inventory-fiscal-year";
