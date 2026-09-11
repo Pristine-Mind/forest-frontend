@@ -4,11 +4,11 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { APPROVAL_ROLES, useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 
 export default function Page() {
   const { can } = useAuthStore();
-  const canWrite = can(WRITE_ROLES);
+  const canWrite = can(APPROVAL_ROLES);
 
   return (
     <AuthGuard>
