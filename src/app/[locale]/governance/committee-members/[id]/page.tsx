@@ -13,7 +13,8 @@ import {
   useUpdateCommitteeMemberWithPhoto,
 } from "@/lib/api/committee";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { useAuthStore, WRITE_ROLES, APPROVAL_ROLES } from "@/stores/auth-store";
+import { getErrorMessage, is403Error, getPermissionErrorMessage } from "@/lib/error-handler";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -119,8 +120,14 @@ function CommitteeMemberDetail({ id }: { id: number }) {
           setPhoto(undefined);
           setIsSubmitting(false);
         },
-        onError: () => {
-          toast({ title: "Failed to update committee member", variant: "destructive" });
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = getPermissionErrorMessage("update committee members", APPROVAL_ROLES);
+            toast({ title: "Permission Denied", description: message, variant: "destructive" });
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast({ title: "Failed to update committee member", description: errorMsg, variant: "destructive" });
+          }
           setIsSubmitting(false);
         },
       }
@@ -138,8 +145,14 @@ function CommitteeMemberDetail({ id }: { id: number }) {
           queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
           router.push("/governance/committee-members");
         },
-        onError: () => {
-          toast({ title: "Failed to remove committee member", variant: "destructive" });
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = getPermissionErrorMessage("remove committee members", APPROVAL_ROLES);
+            toast({ title: "Permission Denied", description: message, variant: "destructive" });
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast({ title: "Failed to remove committee member", description: errorMsg, variant: "destructive" });
+          }
         },
       }
     );

@@ -8,7 +8,7 @@ import {
   useGetCommitteeQuotaStatus,
 } from "@/lib/api";
 import { CommitteeMemberWithPhoto } from "@/lib/api/committee";
-import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { APPROVAL_ROLES, useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -58,7 +58,7 @@ function CommitteeMembersList() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild><Link href="/governance">Back to Governance</Link></Button>
-          {can(WRITE_ROLES) && <Button asChild><Link href="/governance/committee-members/new">Add Member</Link></Button>}
+          {can(APPROVAL_ROLES) && <Button asChild><Link href="/governance/committee-members/new">Add Member</Link></Button>}
         </div>
       </div>
 

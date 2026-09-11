@@ -26,11 +26,13 @@ export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 
 export const UserRole = {
-  committee_officer: 'committee_officer',
+  committee_chair: 'committee_chair',
   member: 'member',
   sub_committee_member: 'sub_committee_member',
   dfo_viewer: 'dfo_viewer',
   admin: 'admin',
+  secretary: 'secretary',
+  staff: 'staff',
 } as const;
 
 export interface User {
@@ -52,11 +54,13 @@ export type UserInputRole = typeof UserInputRole[keyof typeof UserInputRole];
 
 
 export const UserInputRole = {
-  committee_officer: 'committee_officer',
+  committee_chair: 'committee_chair',
   member: 'member',
   sub_committee_member: 'sub_committee_member',
   dfo_viewer: 'dfo_viewer',
   admin: 'admin',
+  secretary: 'secretary',
+  staff: 'staff',
 } as const;
 
 export interface UserInput {
@@ -72,11 +76,13 @@ export type UserUpdateRole = typeof UserUpdateRole[keyof typeof UserUpdateRole];
 
 
 export const UserUpdateRole = {
-  committee_officer: 'committee_officer',
+  committee_chair: 'committee_chair',
   member: 'member',
   sub_committee_member: 'sub_committee_member',
   dfo_viewer: 'dfo_viewer',
   admin: 'admin',
+  secretary: 'secretary',
+  staff: 'staff',
 } as const;
 
 export interface UserUpdate {

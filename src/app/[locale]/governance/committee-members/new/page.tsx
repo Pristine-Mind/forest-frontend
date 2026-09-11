@@ -9,6 +9,8 @@ import { useRouter } from "@/i18n/routing";
 import { useCreateCommitteeMemberWithPhoto } from "@/lib/api/committee";
 import MemberSelect from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage, is403Error, getPermissionErrorMessage } from "@/lib/error-handler";
+import { APPROVAL_ROLES } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -71,8 +73,14 @@ function AddCommitteeMember() {
           queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
           router.push("/governance/committee-members");
         },
-        onError: () => {
-          toast({ title: "Failed to add committee member", variant: "destructive" });
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = getPermissionErrorMessage("add committee members", APPROVAL_ROLES);
+            toast({ title: "Permission Denied", description: message, variant: "destructive" });
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast({ title: "Failed to add committee member", description: errorMsg, variant: "destructive" });
+          }
         },
       }
     );
