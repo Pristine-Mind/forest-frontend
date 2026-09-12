@@ -71,3 +71,26 @@ export const ALL_ROLES: Array<UserRole> = [
   "staff",
   "secretary",
 ];
+
+// Bank Transaction Permissions
+// Full access: committee chair and admin (can create, update, delete)
+export const BANK_TRANSACTION_FULL_ACCESS_ROLES: Array<UserRole> = [
+  "committee_chair",
+  "admin",
+  "staff",
+  "secretary",
+];
+
+// Write access: can create and update but NOT delete
+export const BANK_TRANSACTION_WRITE_ROLES: Array<UserRole> = [
+  "committee_chair",
+  "admin",
+  "staff",
+  "secretary",
+];
+
+// Delete access: only committee chair and admin
+export const BANK_TRANSACTION_DELETE_ROLES: Array<UserRole> = [
+  "committee_chair",
+  "admin",
+];

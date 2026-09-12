@@ -14,7 +14,7 @@ import {
 } from "@/lib/api/committee";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore, WRITE_ROLES, APPROVAL_ROLES } from "@/stores/auth-store";
-import { getErrorMessage, is403Error, getPermissionErrorMessage } from "@/lib/error-handler";
+import { getErrorMessage, is403Error, get403ErrorMessage } from "@/lib/error-handler";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,7 +122,7 @@ function CommitteeMemberDetail({ id }: { id: number }) {
         },
         onError: (error) => {
           if (is403Error(error)) {
-            const message = getPermissionErrorMessage("update committee members", APPROVAL_ROLES);
+            const message = get403ErrorMessage("committee_member_update");
             toast({ title: "Permission Denied", description: message, variant: "destructive" });
           } else {
             const errorMsg = getErrorMessage(error);
@@ -147,7 +147,7 @@ function CommitteeMemberDetail({ id }: { id: number }) {
         },
         onError: (error) => {
           if (is403Error(error)) {
-            const message = getPermissionErrorMessage("remove committee members", APPROVAL_ROLES);
+            const message = get403ErrorMessage("committee_member_delete");
             toast({ title: "Permission Denied", description: message, variant: "destructive" });
           } else {
             const errorMsg = getErrorMessage(error);
