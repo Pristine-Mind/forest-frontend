@@ -9,7 +9,7 @@ import { useRouter } from "@/i18n/routing";
 import { useCreateCommitteeMemberWithPhoto } from "@/lib/api/committee";
 import MemberSelect from "@/components/members/MemberSelect";
 import { useQueryClient } from "@tanstack/react-query";
-import { getErrorMessage, is403Error, getPermissionErrorMessage } from "@/lib/error-handler";
+import { getErrorMessage, is403Error, get403ErrorMessage } from "@/lib/error-handler";
 import { APPROVAL_ROLES } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,7 +75,7 @@ function AddCommitteeMember() {
         },
         onError: (error) => {
           if (is403Error(error)) {
-            const message = getPermissionErrorMessage("add committee members", APPROVAL_ROLES);
+            const message = get403ErrorMessage("committee_member_create");
             toast({ title: "Permission Denied", description: message, variant: "destructive" });
           } else {
             const errorMsg = getErrorMessage(error);

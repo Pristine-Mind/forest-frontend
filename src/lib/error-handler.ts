@@ -41,3 +41,115 @@ export function getPermissionErrorMessage(action: string, allowedRoles: string[]
   
   return `You do not have permission to ${action}. Only users with the following roles can perform this action: ${roleText}.`;
 }
+
+/**
+ * Map operation endpoints to user-friendly messages
+ */
+type OperationType = 
+  | 'bank_transaction_create'
+  | 'bank_transaction_update'
+  | 'bank_transaction_delete'
+  | 'committee_member_create'
+  | 'committee_member_update'
+  | 'committee_member_delete'
+  | 'harvest_create'
+  | 'harvest_update'
+  | 'harvest_delete'
+  | 'forest_block_create'
+  | 'forest_block_update'
+  | 'forest_block_delete'
+  | 'member_create'
+  | 'member_update'
+  | 'member_delete'
+  | 'offense_create'
+  | 'offense_update'
+  | 'offense_delete'
+  | 'unknown';
+
+/**
+ * Get context-aware 403 error message based on operation type
+ */
+export function get403ErrorMessage(operationType: OperationType): string {
+  const messages: Record<OperationType, string> = {
+    bank_transaction_create: 'Only Committee Chair, Secretary, and Staff can create bank transactions.',
+    bank_transaction_update: 'Only Committee Chair, Secretary, and Staff can update bank transactions.',
+    bank_transaction_delete: 'Only Committee Chair can delete bank transactions.',
+    
+    committee_member_create: 'Only Committee Chair can add committee members.',
+    committee_member_update: 'Only Committee Chair can update committee members.',
+    committee_member_delete: 'Only Committee Chair can remove committee members.',
+    
+    harvest_create: 'Only Committee Chair, Secretary, and Staff can create harvest records.',
+    harvest_update: 'Only Committee Chair, Secretary, and Staff can update harvest records.',
+    harvest_delete: 'Only Committee Chair can delete harvest records.',
+    
+    forest_block_create: 'Only Committee Chair can create forest blocks.',
+    forest_block_update: 'Only Committee Chair can update forest blocks.',
+    forest_block_delete: 'Only Committee Chair can delete forest blocks.',
+    
+    member_create: 'Only Committee Chair can add members.',
+    member_update: 'Only Committee Chair can update member information.',
+    member_delete: 'Only Committee Chair can remove members.',
+    
+    offense_create: 'Only Committee Chair and authorized personnel can create offense reports.',
+    offense_update: 'Only Committee Chair and authorized personnel can update offense reports.',
+    offense_delete: 'Only Committee Chair can delete offense reports.',
+    
+    unknown: 'You do not have permission to perform this action. Contact your Committee Chair for access.',
+  };
+  
+  return messages[operationType] || messages.unknown;
+}
+
+/**
+ * Detect operation type from error context
+ */
+export function detectOperationType(endpoint?: string, method?: string): OperationType {
+  if (!endpoint) return 'unknown';
+  
+  const lower = endpoint.toLowerCase();
+  
+  // Bank Transactions
+  if (lower.includes('bank-transactions') || lower.includes('bank_transactions')) {
+    if (method === 'POST') return 'bank_transaction_create';
+    if (method === 'PUT' || method === 'PATCH') return 'bank_transaction_update';
+    if (method === 'DELETE') return 'bank_transaction_delete';
+  }
+  
+  // Committee Members
+  if (lower.includes('committee-members') || lower.includes('committee_members')) {
+    if (method === 'POST') return 'committee_member_create';
+    if (method === 'PUT' || method === 'PATCH') return 'committee_member_update';
+    if (method === 'DELETE') return 'committee_member_delete';
+  }
+  
+  // Harvest Records
+  if (lower.includes('harvest')) {
+    if (method === 'POST') return 'harvest_create';
+    if (method === 'PUT' || method === 'PATCH') return 'harvest_update';
+    if (method === 'DELETE') return 'harvest_delete';
+  }
+  
+  // Forest Blocks
+  if (lower.includes('forest-block') || lower.includes('forest_block')) {
+    if (method === 'POST') return 'forest_block_create';
+    if (method === 'PUT' || method === 'PATCH') return 'forest_block_update';
+    if (method === 'DELETE') return 'forest_block_delete';
+  }
+  
+  // Members
+  if (lower.includes('/members/') || lower.includes('member')) {
+    if (method === 'POST') return 'member_create';
+    if (method === 'PUT' || method === 'PATCH') return 'member_update';
+    if (method === 'DELETE') return 'member_delete';
+  }
+  
+  // Offense Reports
+  if (lower.includes('offense') || lower.includes('offence')) {
+    if (method === 'POST') return 'offense_create';
+    if (method === 'PUT' || method === 'PATCH') return 'offense_update';
+    if (method === 'DELETE') return 'offense_delete';
+  }
+  
+  return 'unknown';
+}

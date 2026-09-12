@@ -16,7 +16,8 @@ import {
   useListBankAccounts,
   type BankTransaction,
 } from "@/lib/api";
-import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { useAuthStore, WRITE_ROLES, BANK_TRANSACTION_WRITE_ROLES, BANK_TRANSACTION_DELETE_ROLES } from "@/stores/auth-store";
+import { getErrorMessage, is403Error, getPermissionErrorMessage, get403ErrorMessage, detectOperationType } from "@/lib/error-handler";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -279,7 +280,8 @@ function TransactionViewDialog({ transaction }: { transaction: BankTransaction }
 
 function BankTransactionsContent() {
   const { can } = useAuthStore();
-  const canWrite = can(WRITE_ROLES);
+  const canWrite = can(BANK_TRANSACTION_WRITE_ROLES);
+  const canDelete = can(BANK_TRANSACTION_DELETE_ROLES);
 
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
@@ -332,7 +334,15 @@ function BankTransactionsContent() {
           setCreateOpen(false);
           invalidate();
         },
-        onError: () => toast.error("Failed to record transaction"),
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = get403ErrorMessage('bank_transaction_create');
+            toast.error(message);
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast.error(errorMsg || "Failed to record transaction");
+          }
+        },
       },
     );
   };
@@ -347,7 +357,15 @@ function BankTransactionsContent() {
           setEditItem(null);
           invalidate();
         },
-        onError: () => toast.error("Failed to update transaction"),
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = get403ErrorMessage('bank_transaction_update');
+            toast.error(message);
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast.error(errorMsg || "Failed to update transaction");
+          }
+        },
       },
     );
   };
@@ -360,7 +378,15 @@ function BankTransactionsContent() {
           toast.success("Transaction deleted");
           invalidate();
         },
-        onError: () => toast.error("Failed to delete transaction"),
+        onError: (error) => {
+          if (is403Error(error)) {
+            const message = get403ErrorMessage('bank_transaction_delete');
+            toast.error(message);
+          } else {
+            const errorMsg = getErrorMessage(error);
+            toast.error(errorMsg || "Failed to delete transaction");
+          }
+        },
       },
     );
   };
@@ -384,6 +410,18 @@ function BankTransactionsContent() {
           You have read-only access. Contact a committee officer to record or edit transactions.
         </div>
       )} */}
+
+      {!canWrite && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <strong>Read-Only Access:</strong> You can view transactions but cannot create or edit them. Only Committee Chair, Secretary, and Staff can manage transactions.
+        </div>
+      )}
+
+      {canWrite && !canDelete && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+          <strong>Limited Access:</strong> You can create and edit transactions, but only the Committee Chair can delete transactions.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
@@ -547,38 +585,41 @@ function BankTransactionsContent() {
                                   />
                                 </DialogContent>
                               </Dialog>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-destructive hover:text-destructive"
-                                    data-testid={`button-delete-transaction-${t.id}`}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This will permanently remove the{" "}
-                                      <strong className="capitalize">{t.transaction_type}</strong> of{" "}
-                                      <strong>Rs. {t.amount}</strong> dated{" "}
-                                      <strong>{t.transaction_date}</strong>.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDelete(t.id)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              
+                              {canDelete && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-destructive hover:text-destructive"
+                                      data-testid={`button-delete-transaction-${t.id}`}
                                     >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Transaction?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This will permanently remove the{" "}
+                                        <strong className="capitalize">{t.transaction_type}</strong> of{" "}
+                                        <strong>Rs. {t.amount}</strong> dated{" "}
+                                        <strong>{t.transaction_date}</strong>.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(t.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
                             </>
                           )}
                         </div>
