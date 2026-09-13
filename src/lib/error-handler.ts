@@ -49,6 +49,12 @@ type OperationType =
   | 'bank_transaction_create'
   | 'bank_transaction_update'
   | 'bank_transaction_delete'
+  | 'cash_transaction_create'
+  | 'cash_transaction_update'
+  | 'cash_transaction_delete'
+  | 'cash_transaction_submit'
+  | 'cash_transaction_approve'
+  | 'cash_transaction_reject'
   | 'committee_member_create'
   | 'committee_member_update'
   | 'committee_member_delete'
@@ -74,6 +80,13 @@ export function get403ErrorMessage(operationType: OperationType): string {
     bank_transaction_create: 'Only Committee Chair, Secretary, and Staff can create bank transactions.',
     bank_transaction_update: 'Only Committee Chair, Secretary, and Staff can update bank transactions.',
     bank_transaction_delete: 'Only Committee Chair can delete bank transactions.',
+    
+    cash_transaction_create: 'Only Committee Chair, Secretary, and Staff can record cash transactions.',
+    cash_transaction_update: 'Only Committee Chair, Secretary, and Staff can update cash transactions.',
+    cash_transaction_delete: 'Only Committee Chair can delete cash transactions.',
+    cash_transaction_submit: 'Only Secretary and Staff can submit transactions for approval.',
+    cash_transaction_approve: 'Only Committee Chair can approve cash transactions.',
+    cash_transaction_reject: 'Only Committee Chair can reject cash transactions.',
     
     committee_member_create: 'Only Committee Chair can add committee members.',
     committee_member_update: 'Only Committee Chair can update committee members.',
@@ -144,6 +157,16 @@ export function detectOperationType(endpoint?: string, method?: string): Operati
     if (method === 'DELETE') return 'member_delete';
   }
   
+  // Cash Transactions
+  if (lower.includes('cash-transactions') || lower.includes('cash_transactions')) {
+    if (lower.includes('submit')) return 'cash_transaction_submit';
+    if (lower.includes('approve')) return 'cash_transaction_approve';
+    if (lower.includes('reject')) return 'cash_transaction_reject';
+    if (method === 'POST') return 'cash_transaction_create';
+    if (method === 'PUT' || method === 'PATCH') return 'cash_transaction_update';
+    if (method === 'DELETE') return 'cash_transaction_delete';
+  }
+  
   // Offense Reports
   if (lower.includes('offense') || lower.includes('offence')) {
     if (method === 'POST') return 'offense_create';
@@ -152,4 +175,17 @@ export function detectOperationType(endpoint?: string, method?: string): Operati
   }
   
   return 'unknown';
+}
+
+/**
+ * Check if error is a permission denied error and extract operation type
+ * Returns the appropriate 403 error message
+ */
+export function handle403Error(error: unknown, endpoint?: string, method?: string): string {
+  if (!is403Error(error)) {
+    return getErrorMessage(error);
+  }
+  
+  const operationType = detectOperationType(endpoint, method);
+  return get403ErrorMessage(operationType);
 }
