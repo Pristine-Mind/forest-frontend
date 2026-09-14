@@ -1,266 +1,101 @@
 "use client";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useRouter } from "@/i18n/routing";
-
-import { useCreateCommitteeMemberWithPhoto } from "@/lib/api/committee";
-import MemberSelect from "@/components/members/MemberSelect";
-import { useQueryClient } from "@tanstack/react-query";
-import { getErrorMessage, is403Error, get403ErrorMessage } from "@/lib/error-handler";
-import { APPROVAL_ROLES } from "@/stores/auth-store";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { customFetch } from "@/lib/api/custom-fetch";
+import { CommitteeMemberForm } from "@/components/forms/CommitteeMemberForm";
 import { useToast } from "@/hooks/use-toast";
-
-const formSchema = z.object({
-  member: z.string().min(1, "Member is required"),
-  position: z.enum(["chair", "vice_chair", "secretary", "joint_secretary", "treasurer", "member"]),
-  gender: z.string().min(1, "Gender is required"),
-  caste_ethnicity: z.string().optional(),
-  term_start: z.string().min(1, "Term start is required"),
-  term_end: z.string().min(1, "Term end is required"),
-  status: z.enum(["active", "vacant", "removed"]),
-  photo: z.instanceof(File).optional(),
-}).refine((data) => data.term_end >= data.term_start, {
-  message: "Term end must be on or after term start",
-  path: ["term_end"],
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { getErrorMessage, is403Error, get403ErrorMessage } from "@/lib/error-handler";
+import type { CommitteeMemberInput } from "@/schemas/committee-member.schema";
 
 function AddCommitteeMember() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const createMember = useCreateCommitteeMemberWithPhoto();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      member: "",
-      position: "member",
-      gender: "",
-      caste_ethnicity: "",
-      term_start: "",
-      term_end: "",
-      status: "active",
-      photo: undefined,
+  // Fetch available sub-committees
+  const { data: subcommittees = [] } = useQuery({
+    queryKey: ['subcommittees'],
+    queryFn: async () => {
+      try {
+        const response = await customFetch<{ results?: Array<{ id: number; name: string }> }>(
+          '/api/v1/governance/subcommittees/',
+          {
+            method: 'GET',
+            responseType: 'json',
+          }
+        );
+        return response.results || [];
+      } catch (error) {
+        console.error('Failed to fetch subcommittees:', error);
+        return [];
+      }
     },
   });
 
-  function onSubmit(values: FormValues) {
-    createMember.mutate(
-      {
-        member: Number(values.member),
-        position: values.position,
-        gender: values.gender,
-        caste_ethnicity: values.caste_ethnicity || undefined,
-        term_start: values.term_start,
-        term_end: values.term_end,
-        status: values.status,
-        photo: values.photo,
-      },
-      {
-        onSuccess: () => {
-          toast({ title: "Committee member added" });
-          queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/"] });
-          queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
-          router.push("/governance/committee-members");
-        },
-        onError: (error) => {
-          if (is403Error(error)) {
-            const message = get403ErrorMessage("committee_member_create");
-            toast({ title: "Permission Denied", description: message, variant: "destructive" });
-          } else {
-            const errorMsg = getErrorMessage(error);
-            toast({ title: "Failed to add committee member", description: errorMsg, variant: "destructive" });
-          }
-        },
+  async function onSubmit(data: CommitteeMemberInput) {
+    if (!data.member) {
+      throw new Error('Please select a member');
+    }
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        content_type: data.member.content_type,
+        object_id: data.member.object_id,
+        position: data.position,
+        gender: data.gender,
+        caste_ethnicity: data.caste_ethnicity || '',
+        term_start: data.term_start,
+        term_end: data.term_end,
+        status: data.status,
+        subcommittees: data.subcommittees || [],
+      };
+
+      await customFetch(
+        '/api/v1/governance/committee-members/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          responseType: 'json',
+        }
+      );
+
+      toast({ title: "Committee member added" });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
+      router.push("/governance/committee-members");
+    } catch (error) {
+      if (is403Error(error)) {
+        const message = get403ErrorMessage("committee_member_create");
+        toast({ title: "Permission Denied", description: message, variant: "destructive" });
+      } else {
+        const errorMsg = getErrorMessage(error);
+        toast({ title: "Failed to add committee member", description: errorMsg, variant: "destructive" });
       }
-    );
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Add Committee Member</h1>
-        <p className="text-muted-foreground mt-2">Assign a member to a committee position.</p>
+        <p className="text-muted-foreground mt-2">Assign a household or member to a committee position.</p>
       </div>
-      <Card>
-        <CardHeader><CardTitle>Member Details</CardTitle></CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="member"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Member</FormLabel>
-                    <FormControl>
-                      <MemberSelect
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Select member"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="position"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Position</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="chair">Chair</SelectItem>
-                        <SelectItem value="vice_chair">Vice Chair</SelectItem>
-                        <SelectItem value="secretary">Secretary</SelectItem>
-                        <SelectItem value="joint_secretary">Joint Secretary</SelectItem>
-                        <SelectItem value="treasurer">Treasurer</SelectItem>
-                        <SelectItem value="member">Member</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Gender</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="caste_ethnicity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Caste / Ethnicity</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select caste / ethnicity" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="brahmin">Brahmin</SelectItem>
-                          <SelectItem value="chhetri">Chhetri</SelectItem>
-                          <SelectItem value="janajati">Janajati</SelectItem>
-                          <SelectItem value="newar">Newar</SelectItem>
-                          <SelectItem value="madhesi">Madhesi</SelectItem>
-                          <SelectItem value="dalit">Dalit</SelectItem>
-                          <SelectItem value="muslim">Muslim</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="term_start"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Term Start</FormLabel>
-                      <FormControl><Input type="date" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="term_end"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Term End</FormLabel>
-                      <FormControl><Input type="date" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="vacant">Vacant</SelectItem>
-                        <SelectItem value="removed">Removed</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="photo"
-                render={({ field: { value, onChange, ...field } }) => (
-                  <FormItem>
-                    <FormLabel>Photo</FormLabel>
-                    <FormControl>
-                      <div className="space-y-2">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => onChange(e.target.files?.[0])}
-                          {...field}
-                        />
-                        {value && (
-                          <div className="text-sm text-muted-foreground">
-                            Selected: {value.name}
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={createMember.isPending}>
-                  {createMember.isPending ? "Adding..." : "Add Member"}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => router.push("/governance/committee-members")}>Cancel</Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      <CommitteeMemberForm
+        onSubmit={onSubmit}
+        isLoading={isLoading}
+        subcommittees={subcommittees}
+      />
     </div>
   );
 }

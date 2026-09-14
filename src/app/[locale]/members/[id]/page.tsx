@@ -182,7 +182,7 @@ function MemberDetail({ id }: { id: number }) {
                   {members?.results.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell className="font-medium">{m.full_name}</TableCell>
-                      <TableCell className="font-medium">N/A</TableCell>
+                      <TableCell className="font-medium">{m.full_name_en}</TableCell>
                       <TableCell>
                         {(m as any).member_photo ? (
                           <img src={(m as any).member_photo} alt={m.full_name} className="w-12 h-12 rounded-full object-cover" />

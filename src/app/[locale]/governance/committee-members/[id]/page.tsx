@@ -4,24 +4,18 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { use, useEffect, useState } from "react";
 import { Link } from "@/i18n/routing";
 import { useRouter } from "@/i18n/routing";
-import {
-  useGetCommitteeMember,
-  useDeleteCommitteeMember,
-} from "@/lib/api";
-import {
-  CommitteeMemberWithPhoto,
-  useUpdateCommitteeMemberWithPhoto,
-} from "@/lib/api/committee";
-import { useQueryClient } from "@tanstack/react-query";
+import { useGetCommitteeMember, useDeleteCommitteeMember } from "@/lib/api";
+import { CommitteeMemberForm } from "@/components/forms/CommitteeMemberForm";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuthStore, WRITE_ROLES, APPROVAL_ROLES } from "@/stores/auth-store";
 import { getErrorMessage, is403Error, get403ErrorMessage } from "@/lib/error-handler";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { customFetch } from "@/lib/api/custom-fetch";
+import type { CommitteeMemberInput } from "@/schemas/committee-member.schema";
 
 const POSITION_LABELS: Record<string, string> = {
   chair: "अध्यक्ष — Chair",
@@ -61,77 +55,80 @@ function CommitteeMemberDetail({ id }: { id: number }) {
   const { can } = useAuthStore();
   const canWrite = can(WRITE_ROLES);
 
-  const { data: cm, isLoading } = useGetCommitteeMember(id);
-  const updateMember = useUpdateCommitteeMemberWithPhoto();
+  const { data: member, isLoading } = useGetCommitteeMember(id);
   const deleteMember = useDeleteCommitteeMember();
+  const [isLoading2, setIsLoading2] = useState(false);
 
-  const [position, setPosition] = useState<string>("member");
-  const [status, setStatus] = useState<string>("active");
-  const [photo, setPhoto] = useState<File | undefined>(undefined);
-  const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  const member = cm as CommitteeMemberWithPhoto | undefined;
-
-  // Update state when data loads
-  useEffect(() => {
-    if (member && !isInitialized) {
-      setPosition(member.position);
-      setStatus(member.status);
-      setPhotoPreview(member.photo ?? undefined);
-      setIsInitialized(true);
-    }
-  }, [member, isInitialized]);
+  // Fetch available sub-committees
+  const { data: subcommittees = [] } = useQuery({
+    queryKey: ['subcommittees'],
+    queryFn: async () => {
+      try {
+        const response = await customFetch<{ results?: Array<{ id: number; name: string }> }>(
+          '/api/v1/governance/subcommittees/',
+          {
+            method: 'GET',
+            responseType: 'json',
+          }
+        );
+        return response.results || [];
+      } catch (error) {
+        console.error('Failed to fetch subcommittees:', error);
+        return [];
+      }
+    },
+  });
 
   if (isLoading) return <div>Loading...</div>;
   if (!member) return <div>Committee member not found.</div>;
 
-  function handlePhotoChange(file?: File) {
-    setPhoto(file);
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoPreview(url);
-    } else {
-      setPhotoPreview(member?.photo ?? undefined);
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const data: { position: any; status: any; photo?: File } = {
-      position: position as any,
-      status: status as any,
-    };
-    if (photo) {
-      data.photo = photo;
+  async function handleSubmit(data: CommitteeMemberInput) {
+    if (!data.member) {
+      throw new Error('Please select a member');
     }
 
-    updateMember.mutate(
-      { id, data },
-      {
-        onSuccess: () => {
-          toast({ title: "Committee member updated" });
-          queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/"] });
-          queryClient.invalidateQueries({ queryKey: [`/api/v1/governance/committee-members/${id}/`] });
-          queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
-          setPhoto(undefined);
-          setIsSubmitting(false);
-        },
-        onError: (error) => {
-          if (is403Error(error)) {
-            const message = get403ErrorMessage("committee_member_update");
-            toast({ title: "Permission Denied", description: message, variant: "destructive" });
-          } else {
-            const errorMsg = getErrorMessage(error);
-            toast({ title: "Failed to update committee member", description: errorMsg, variant: "destructive" });
-          }
-          setIsSubmitting(false);
-        },
+    setIsLoading2(true);
+    try {
+      const payload = {
+        content_type: data.member.content_type,
+        object_id: data.member.object_id,
+        position: data.position,
+        gender: data.gender,
+        caste_ethnicity: data.caste_ethnicity || '',
+        term_start: data.term_start,
+        term_end: data.term_end,
+        status: data.status,
+        subcommittees: data.subcommittees || [],
+      };
+
+      await customFetch(
+        `/api/v1/governance/committee-members/${id}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          responseType: 'json',
+        }
+      );
+
+      toast({ title: "Committee member updated" });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/v1/governance/committee-members/${id}/`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/governance/committee-members/quota_status/"] });
+    } catch (error) {
+      if (is403Error(error)) {
+        const message = get403ErrorMessage("committee_member_update");
+        toast({ title: "Permission Denied", description: message, variant: "destructive" });
+      } else {
+        const errorMsg = getErrorMessage(error);
+        toast({ title: "Failed to update committee member", description: errorMsg, variant: "destructive" });
       }
-    );
+      throw error;
+    } finally {
+      setIsLoading2(false);
+    }
   }
 
   function handleDelete() {
@@ -159,7 +156,7 @@ function CommitteeMemberDetail({ id }: { id: number }) {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16 border">
@@ -178,117 +175,76 @@ function CommitteeMemberDetail({ id }: { id: number }) {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Member Details</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Gender</p>
-              <p className="capitalize">{member.gender}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Caste / Ethnicity</p>
-              <p>{member.caste_ethnicity || "—"}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Term Start</p>
-              <p>{formatDate(member.term_start)}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Term End</p>
-              <p>{formatDate(member.term_end)}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Status</p>
-              <Badge variant={STATUS_VARIANT[member.status] ?? "secondary"} className="capitalize">
-                {member.status}
-              </Badge>
-            </div>
-          </div>
-
-          {canWrite && (
-            <form onSubmit={handleSubmit} className="space-y-4 border-t pt-6">
-              <h3 className="text-lg font-medium">Update Position / Status / Photo</h3>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Photo</label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-14 w-14 border">
-                    {photoPreview && <AvatarImage src={photoPreview} alt={member.member_name ?? ""} />}
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {getInitials(member.member_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handlePhotoChange(e.target.files?.[0])}
-                    className="max-w-xs"
-                  />
-                </div>
+      {!canWrite ? (
+        <Card>
+          <CardHeader><CardTitle>Member Details</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Gender</p>
+                <p className="capitalize">{member.gender}</p>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Position (पद)</label>
-                <Select
-                  value={position}
-                  onValueChange={(value) => {
-                    if (value && value.trim() !== "") {
-                      setPosition(value);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(POSITION_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Caste / Ethnicity</p>
+                <p>{member.caste_ethnicity || "—"}</p>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Status</label>
-                <Select
-                  value={status}
-                  onValueChange={(value) => {
-                    if (value && value.trim() !== "") {
-                      setStatus(value);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="vacant">Vacant</SelectItem>
-                    <SelectItem value="removed">Removed</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Term Start</p>
+                <p>{formatDate(member.term_start)}</p>
               </div>
-
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Saving..." : "Save Changes"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deleteMember.isPending}
-                >
-                  {deleteMember.isPending ? "Removing..." : "Remove"}
-                </Button>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Term End</p>
+                <p>{formatDate(member.term_end)}</p>
               </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Status</p>
+                <Badge variant={STATUS_VARIANT[member.status] ?? "secondary"} className="capitalize">
+                  {member.status}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <CommitteeMemberForm
+            initialValues={{
+              member: {
+                id: member.object_id,
+                name: member.member_name,
+                type: member.member_type,
+                content_type: member.member_type,
+                object_id: member.object_id,
+              },
+              position: member.position as any,
+              gender: member.gender,
+              caste_ethnicity: member.caste_ethnicity || '',
+              term_start: member.term_start,
+              term_end: member.term_end,
+              status: member.status as any,
+              subcommittees: member.subcommittees || [],
+            }}
+            onSubmit={handleSubmit}
+            isLoading={isLoading2}
+            subcommittees={subcommittees}
+          />
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleteMember.isPending}
+              >
+                {deleteMember.isPending ? "Removing..." : "Remove Committee Member"}
+              </Button>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
