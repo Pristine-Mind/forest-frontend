@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { adToBs } from "@/components/ui/nepali-date-input";
+
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
@@ -64,8 +66,8 @@ function OfficialGuestsList() {
                   <TableRow key={g.id}>
                     <TableCell className="font-medium">{g.visitor_name}</TableCell>
                     <TableCell>{g.designation}</TableCell>
-                    <TableCell>{formatDate(g.visit_start_date)}</TableCell>
-                    <TableCell>{formatDate(g.visit_end_date)}</TableCell>
+                    <TableCell>{adToBs(g.visit_start_date)}</TableCell>
+                    <TableCell>{adToBs(g.visit_end_date)}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" asChild><Link href={`/visitors/official-guests/${g.id}`}>View / Edit</Link></Button>
                     </TableCell>

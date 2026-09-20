@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -63,6 +64,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { adToBs } from "@/components/ui/nepali-date-input";
 
 
 const transactionSchema = z.object({
@@ -179,7 +181,7 @@ function TransactionForm({
             <FormItem>
               <FormLabel>Transaction Date</FormLabel>
               <FormControl>
-                <Input {...field} type="date" data-testid="input-transaction-date" />
+                <NepaliDateInput {...field} data-testid="input-transaction-date" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -516,7 +518,7 @@ function BankTransactionsContent() {
                   )}
                   {filteredResults.map((t) => (
                     <TableRow key={t.id} data-testid={`row-transaction-${t.id}`}>
-                      <TableCell className="whitespace-nowrap">{t.transaction_date}</TableCell>
+                      <TableCell className="whitespace-nowrap">{adToBs(t.transaction_date)}</TableCell>
                       <TableCell className="whitespace-nowrap">
                         {accountNameById.get(t.account) ?? `#${t.account}`}
                       </TableCell>

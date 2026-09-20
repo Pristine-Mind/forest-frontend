@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -155,7 +156,7 @@ function AllocationRuleDetail({ id }: { id: number }) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Effective From</FormLabel>
-                      <FormControl><Input type="date" {...field} /></FormControl>
+                      <FormControl><NepaliDateInput {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

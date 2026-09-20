@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { adToBs } from "@/components/ui/nepali-date-input";
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   pending: "secondary",
@@ -131,7 +132,7 @@ function HarvestRequestDetail({ id }: { id: number }) {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Requested Date</p>
-              <p>{formatDate(hr.requested_date)}</p>
+              <p>{adToBs(hr.requested_date)}</p>
             </div>
             {hr.approved_by_name && (
               <div>

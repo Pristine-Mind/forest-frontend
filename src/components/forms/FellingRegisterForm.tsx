@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
@@ -103,10 +104,10 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
       dispatch_deadline: "",
       cfug_rep_name: "",
       cfug_rep_position: "",
-      cfug_rep_signed_date: "",
+      cfug_rep_signed_date: new Date().toISOString().split("T")[0],
       forest_rep_name: "",
       forest_rep_position: "",
-      forest_rep_signed_date: "",
+      forest_rep_signed_date: new Date().toISOString().split("T")[0],
       entries: [emptyEntry],
     },
   });
@@ -232,7 +233,7 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
                   <FormItem>
                     <FormLabel>Felling/sawing deadline (कटान चिरान म्याद)</FormLabel>
                     <FormControl>
-                      <Input {...field} type="date" data-testid="input-felling-deadline" />
+                       <NepaliDateInput {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -245,7 +246,7 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
                   <FormItem>
                     <FormLabel>Dispatch deadline (निकासी म्याद)</FormLabel>
                     <FormControl>
-                      <Input {...field} type="date" data-testid="input-dispatch-deadline" />
+                       <NepaliDateInput {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -292,7 +293,7 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
                     <FormItem>
                       <FormLabel>Date</FormLabel>
                       <FormControl>
-                        <Input {...field} type="date" data-testid="input-cfug-rep-date" />
+                        <NepaliDateInput {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -334,7 +335,7 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
                     <FormItem>
                       <FormLabel>Date</FormLabel>
                       <FormControl>
-                        <Input {...field} type="date" data-testid="input-forest-rep-date" />
+                        <NepaliDateInput {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -391,7 +392,7 @@ export function FellingRegisterForm({ onSubmit, isLoading, species }: FellingReg
                           <FormItem>
                             <FormLabel>Date (मिति)</FormLabel>
                             <FormControl>
-                              <Input {...field} type="date" data-testid={`input-entry-date-${index}`} />
+                              <NepaliDateInput {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

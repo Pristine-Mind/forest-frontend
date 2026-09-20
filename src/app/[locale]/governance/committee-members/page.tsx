@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { adToBs } from "@/components/ui/nepali-date-input";
 function formatDate(value?: string | null) {
   if (!value) return "—";
   const d = new Date(value);
@@ -145,8 +145,8 @@ function CommitteeMembersList() {
                       <TableCell>{c.member_name}</TableCell>
                       <TableCell className="capitalize">{c.position.replace("_", " ")}</TableCell>
                       <TableCell className="capitalize">{c.gender}</TableCell>
-                      <TableCell>{formatDate(c.term_start)}</TableCell>
-                      <TableCell>{formatDate(c.term_end)}</TableCell>
+                      <TableCell>{adToBs(c.term_start)}</TableCell>
+                      <TableCell>{adToBs(c.term_end)}</TableCell>
                       <TableCell>
                         <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"} className="capitalize">{c.status}</Badge>
                       </TableCell>

@@ -226,7 +226,7 @@ export function TreeCountForm({ initialData, blocks = [], species = [], onSubmit
                   <FormItem>
                     <FormLabel>Survey Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <NepaliDateInput {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

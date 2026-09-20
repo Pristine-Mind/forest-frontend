@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -82,7 +83,7 @@ export function HarvestLogForm({ onSubmit, isLoading = false, initialData }: Har
                 <FormItem>
                   <FormLabel>Harvest Date</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <NepaliDateInput {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

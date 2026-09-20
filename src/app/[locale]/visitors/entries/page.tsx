@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { adToBs } from "@/components/ui/nepali-date-input";
+
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
@@ -78,7 +80,7 @@ function VisitorEntriesList() {
               <TableBody>
                 {data?.results.map((v) => (
                   <TableRow key={v.id}>
-                    <TableCell>{formatDate(v.entry_date)}</TableCell>
+                    <TableCell>{adToBs(v.entry_date)}</TableCell>
                     <TableCell className="capitalize">{v.visit_purpose.replace("_", " ")}</TableCell>
                     <TableCell className="text-right">{v.visitor_count}</TableCell>
                     <TableCell className="text-right">{v.days}</TableCell>

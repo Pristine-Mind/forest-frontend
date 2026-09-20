@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { useListReceipts } from "@/lib/api";
+import { formatDateNepali } from "@/lib/nepali-date-format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,8 +21,7 @@ const REFERENCE_TYPE_KEYS: Record<string, string> = {
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+  return formatDateNepali(value, "short") || "—";
 }
 
 function ReceiptsList() {
