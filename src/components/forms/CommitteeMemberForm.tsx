@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { NepaliDateInput } from '@/components/ui/nepali-date-input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
@@ -74,8 +75,8 @@ export function CommitteeMemberForm({
       position: initialValues?.position ?? 'member',
       gender: initialValues?.gender ?? '',
       caste_ethnicity: initialValues?.caste_ethnicity ?? '',
-      term_start: initialValues?.term_start ?? '',
-      term_end: initialValues?.term_end ?? '',
+      term_start: initialValues?.term_start ?? new Date().toISOString().split('T')[0],
+      term_end: initialValues?.term_end ?? new Date().toISOString().split('T')[0],
       status: initialValues?.status ?? 'active',
       subcommittees: initialValues?.subcommittees ?? [],
     },
@@ -252,7 +253,7 @@ export function CommitteeMemberForm({
                 <FormItem>
                   <FormLabel>Term Start Date</FormLabel>
                   <FormControl>
-                    <Input type="date" disabled={isLoading} {...field} />
+                    <NepaliDateInput disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,7 +268,7 @@ export function CommitteeMemberForm({
                 <FormItem>
                   <FormLabel>Term End Date</FormLabel>
                   <FormControl>
-                    <Input type="date" disabled={isLoading} {...field} />
+                    <NepaliDateInput disabled={isLoading} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

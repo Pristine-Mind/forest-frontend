@@ -13,11 +13,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Trash2, Edit } from "lucide-react";
+import { formatDateNepali } from "@/lib/nepali-date-format";
 
 function formatDate(value?: string | null) {
   if (!value) return "N/A";
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? value : d.toLocaleDateString();
+  try {
+    return formatDateNepali(value, "short");
+  } catch {
+    return "N/A";
+  }
 }
 
 const EDUCATION_KEYS: Record<string, string> = {

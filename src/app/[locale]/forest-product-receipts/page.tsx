@@ -2,6 +2,7 @@
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useListForestProductReceipts } from "@/lib/api";
+import { formatDateNepali } from "@/lib/nepali-date-format";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,8 +11,7 @@ import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? value : d.toLocaleDateString();
+  return formatDateNepali(value, "short") || "—";
 }
 
 function ForestProductReceiptList() {
@@ -49,14 +49,14 @@ function ForestProductReceiptList() {
                     <TableCell className="font-mono">{r.receipt_no}</TableCell>
                     <TableCell>{r.buyer_name}</TableCell>
                     <TableCell>{formatDate(r.issuer_date)}</TableCell>
-                    <TableCell className="text-right font-mono">NPR {r.grand_total}</TableCell>
+                    <TableCell className="text-right font-mono">Rs.{r.grand_total}</TableCell>
                     <TableCell className="flex gap-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/forest-product-receipts/${r.id}`}>View</Link>
                       </Button>
-                      <Button variant="outline" size="sm" asChild>
+                      {/* <Button variant="outline" size="sm" asChild>
                         <Link href={`/forest-product-receipts/${r.id}/print`}>Print</Link>
-                      </Button>
+                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))}

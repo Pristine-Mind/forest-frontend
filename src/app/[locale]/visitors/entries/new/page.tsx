@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -98,7 +99,7 @@ function LogVisitorEntry() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Entry Date</FormLabel>
-                    <FormControl><Input type="date" {...field} /></FormControl>
+                    <FormControl><NepaliDateInput {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

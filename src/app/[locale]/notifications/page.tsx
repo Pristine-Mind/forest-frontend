@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { adToBs } from "@/components/ui/nepali-date-input";
 
 type NotificationStatus = "unread" | "read" | "actioned";
 
@@ -113,7 +114,7 @@ function NotificationItem({
             {notification.description}
           </p>
           <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-            <span>{new Date(notification.created_at).toLocaleDateString()}</span>
+            <span>{adToBs(notification.created_at)}</span>
             <span>•</span>
             <span className="capitalize">{notification.notification_type.replace(/_/g, " ")}</span>
           </div>

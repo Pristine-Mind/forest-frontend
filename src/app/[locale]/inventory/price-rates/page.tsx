@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { adToBs } from "@/components/ui/nepali-date-input";
+
 
 function formatDate(value?: string | null) {
   if (!value) return "N/A";
@@ -52,7 +54,7 @@ function PriceRateList() {
                     <TableCell>{r.grade}</TableCell>
                     <TableCell className="capitalize">{r.buyer_type}</TableCell>
                     <TableCell className="text-right font-mono">{r.total_rate_per_unit}</TableCell>
-                    <TableCell>{formatDate(r.effective_from)}</TableCell>
+                    <TableCell>{adToBs(r.effective_from)}</TableCell>
                     <TableCell>
                       <Button variant="outline" size="sm" asChild><Link href={`/inventory/price-rates/${r.id}`}>Edit</Link></Button>
                     </TableCell>

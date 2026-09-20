@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -49,10 +50,10 @@ function ForestProductReceiptNew() {
 
   const [footer, setFooter] = useState({
     receiver_name: "",
-    receiver_date: "",
+    receiver_date: new Date().toISOString().split("T")[0],
     issuer_name: "",
     issuer_position: "",
-    issuer_date: "",
+    issuer_date: new Date().toISOString().split("T")[0],
   });
 
   function updateItem(index: number, field: keyof LineItem, value: string) {
@@ -179,10 +180,9 @@ function ForestProductReceiptNew() {
           </div>
           <div className="space-y-2">
             <Label>Issue Date (मिति) *</Label>
-            <Input
-              type="date"
+            <NepaliDateInput
               value={header.issue_date}
-              onChange={(e) => setHeader((h) => ({ ...h, issue_date: e.target.value }))}
+              onChange={(value) => setHeader((h) => ({ ...h, issue_date: value }))}
             />
           </div>
         </CardContent>
@@ -293,7 +293,7 @@ function ForestProductReceiptNew() {
         <CardHeader><CardTitle>Signatures (दस्तखत)</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground">रांसद बुझ्फ लिनेको (Receiver)</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">रसिद बुझ्फ लिनेको (Receiver)</h3>
             <div className="space-y-2">
               <Label>नाम (Name)</Label>
               <Input
@@ -303,16 +303,15 @@ function ForestProductReceiptNew() {
             </div>
             <div className="space-y-2">
               <Label>मिति (Date)</Label>
-              <Input
-                type="date"
+              <NepaliDateInput
                 value={footer.receiver_date}
-                onChange={(e) => setFooter((f) => ({ ...f, receiver_date: e.target.value }))}
+                onChange={(value) => setFooter((f) => ({ ...f, receiver_date: value }))}
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground">रांसद दिनेको (Issuer)</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">रसिद दिनेको (Issuer)</h3>
             <div className="space-y-2">
               <Label>नाम (Name)</Label>
               <Input
@@ -329,10 +328,9 @@ function ForestProductReceiptNew() {
             </div>
             <div className="space-y-2">
               <Label>मिति (Date)</Label>
-              <Input
-                type="date"
+              <NepaliDateInput
                 value={footer.issuer_date}
-                onChange={(e) => setFooter((f) => ({ ...f, issuer_date: e.target.value }))}
+                onChange={(value) => setFooter((f) => ({ ...f, issuer_date: value }))}
               />
             </div>
           </div>

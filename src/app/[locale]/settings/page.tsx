@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
+import { adToBs } from "@/components/ui/nepali-date-input";
+
 
 import {
   useListPriceRates,
@@ -68,6 +70,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -191,7 +194,7 @@ function PriceRateForm({
             <FormItem>
               <FormLabel>Effective From</FormLabel>
               <FormControl>
-                <Input {...field} type="date" data-testid="input-effective-from" />
+                <NepaliDateInput {...field} data-testid="input-effective-from" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -323,7 +326,7 @@ function PriceRatesTab({ canWrite }: { canWrite: boolean }) {
                   </TableCell>
                   <TableCell className="capitalize">{rate.buyer_type}</TableCell>
                   <TableCell className="font-mono">Rs. {rate.rate_per_unit}</TableCell>
-                  <TableCell>{rate.effective_from}</TableCell>
+                  <TableCell>{adToBs(rate.effective_from)}</TableCell>
                   {canWrite && (
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -519,7 +522,7 @@ function VisitorFeeRatesTab({ canWrite }: { canWrite: boolean }) {
                     {rate.visit_purpose.replace("_", " ")}
                   </TableCell>
                   <TableCell className="font-mono">Rs. {rate.fee_per_visitor_per_day}</TableCell>
-                  <TableCell className="text-muted-foreground text-sm">{rate.updated_at?.slice(0, 10)}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">{adToBs(rate.updated_at?.slice(0, 10))}</TableCell>
                   {canWrite && (
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -903,7 +906,7 @@ function AllocationForm({
             <FormItem>
               <FormLabel>Effective From</FormLabel>
               <FormControl>
-                <Input {...field} type="date" data-testid="input-allocation-effective-from" />
+                <NepaliDateInput {...field} data-testid="input-allocation-effective-from" />
               </FormControl>
               <FormMessage />
             </FormItem>

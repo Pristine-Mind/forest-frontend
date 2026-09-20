@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
@@ -56,8 +57,8 @@ function OfficialGuestDetail({ id }: { id: number }) {
     defaultValues: {
       visitor_name: "",
       designation: "",
-      visit_start_date: "",
-      visit_end_date: "",
+      visit_start_date: new Date().toISOString().split("T")[0],
+      visit_end_date: new Date().toISOString().split("T")[0],
       comments_or_guidance: "",
     },
   });
@@ -184,7 +185,7 @@ function OfficialGuestDetail({ id }: { id: number }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Visit Start Date</FormLabel>
-                        <FormControl><Input type="date" {...field} /></FormControl>
+                        <FormControl><NepaliDateInput {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -195,7 +196,7 @@ function OfficialGuestDetail({ id }: { id: number }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Visit End Date</FormLabel>
-                        <FormControl><Input type="date" {...field} /></FormControl>
+                        <FormControl><NepaliDateInput {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

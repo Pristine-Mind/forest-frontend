@@ -103,7 +103,7 @@ function TimberCollectionList() {
                           <TableCell>{item.species_name}</TableCell>
                           <TableCell className="text-right">{parseFloat(item.wood_volume).toFixed(2)}</TableCell>
                           <TableCell className="text-right">{parseFloat(item.firewood).toFixed(2)}</TableCell>
-                          <TableCell>{new Date(item.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>{formatDateNepali(item.created_at, "short")}</TableCell>
                           <TableCell>
                             <Button variant="outline" size="sm" asChild>
                               <Link href={`/forest/timber-collection/${item.id}`}>View</Link>

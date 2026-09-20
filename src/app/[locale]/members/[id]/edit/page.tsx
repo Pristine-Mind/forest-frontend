@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { NepaliDateInput } from "@/components/ui/nepali-date-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { use } from "react";
@@ -234,10 +235,10 @@ function HouseholdEdit({ id }: { id: number }) {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="date_joined" render={({ field }) => (
-                    <FormItem><FormLabel>Date Joined</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Date Joined</FormLabel><FormControl><NepaliDateInput {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="registration_date" render={({ field }) => (
-                    <FormItem><FormLabel>{t("registrationDate")}</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>{t("registrationDate")}</FormLabel><FormControl><NepaliDateInput {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               </div>

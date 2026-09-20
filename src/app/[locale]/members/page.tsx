@@ -11,6 +11,7 @@ import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { formatDateNepali } from "@/lib/nepali-date-format";
 import {
   Pagination,
   PaginationContent,
@@ -23,8 +24,11 @@ import {
 
 function formatDate(value?: string | null) {
   if (!value) return "—";
-  const d = new Date(value);
-  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+  try {
+    return formatDateNepali(value, "short");
+  } catch {
+    return "—";
+  }
 }
 
 function formatValue(value?: string | null) {

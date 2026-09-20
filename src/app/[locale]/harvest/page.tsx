@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
+import { adToBs } from "@/components/ui/nepali-date-input";
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   pending: "secondary",
@@ -98,7 +99,7 @@ function HarvestRequestList() {
                       {h.source_type === "member_requested" ? h.member_name ?? "N/A" : h.operation_name}
                     </TableCell>
                     <TableCell className="text-right">{h.quantity}</TableCell>
-                    <TableCell>{formatDate(h.requested_date)}</TableCell>
+                    <TableCell>{adToBs(h.requested_date)}</TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[h.status] ?? "secondary"} className="capitalize">{h.status}</Badge>
                     </TableCell>

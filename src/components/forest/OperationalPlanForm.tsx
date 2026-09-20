@@ -63,7 +63,7 @@ export function OperationalPlanForm({ onSubmit, isLoading = false }: Operational
                   <FormItem>
                     <FormLabel>Valid From</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <NepaliDateInput {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -77,7 +77,7 @@ export function OperationalPlanForm({ onSubmit, isLoading = false }: Operational
                   <FormItem>
                     <FormLabel>Valid To</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <NepaliDateInput {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
