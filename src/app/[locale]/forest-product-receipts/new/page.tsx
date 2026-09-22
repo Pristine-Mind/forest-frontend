@@ -290,10 +290,10 @@ function ForestProductReceiptNew() {
 
       {/* Footer / Signatures */}
       <Card>
-        <CardHeader><CardTitle>Signatures (दस्तखत)</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Signatures (हस्ताक्षर)</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground">रसिद बुझ्फ लिनेको (Receiver)</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">ररसिद बुझी लिने (Receiver)</h3>
             <div className="space-y-2">
               <Label>नाम (Name)</Label>
               <Input

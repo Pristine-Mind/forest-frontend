@@ -36,7 +36,7 @@ function ForestProductReceiptList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Receipt No. (रांसद नं.)</TableHead>
+                  <TableHead>Receipt No. (रसिद नं.)</TableHead>
                   <TableHead>Buyer (श्री)</TableHead>
                   <TableHead>Issue Date (मिति)</TableHead>
                   <TableHead className="text-right">Grand Total (कूल रकम)</TableHead>
