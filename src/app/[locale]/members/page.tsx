@@ -237,9 +237,9 @@ function HouseholdsList() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data?.results?.map((h) => (
+                    {data?.results?.map((h, index) => (
                       <TableRow key={h.id}>
-                        <TableCell className="font-medium">{h.id}</TableCell>
+                        <TableCell className="font-medium">{offset + index + 1}</TableCell>
                         <TableCell>{h.household_head_name}</TableCell>
                         <TableCell>{h.english_name || "—"}</TableCell>
                         <TableCell>
