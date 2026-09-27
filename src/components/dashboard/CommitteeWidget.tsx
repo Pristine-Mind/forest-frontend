@@ -18,7 +18,11 @@ const POSITION_PRIORITY: Record<string, number> = {
   member: 6,
 };
 
-const DISPLAY_LIMIT = 6;
+function getTier(position: string): 1 | 2 | 3 {
+  if (position === "chair") return 1;
+  if (["vice_chair", "secretary", "joint_secretary", "treasurer"].includes(position)) return 2;
+  return 3;
+}
 
 function getInitials(name?: string | null): string {
   if (!name) return "?";
@@ -34,11 +38,48 @@ function formatPosition(position: string): string {
   return position.replace(/_/g, " ");
 }
 
+function MemberCard({
+  member,
+  size,
+}: {
+  member: CommitteeMemberWithPhoto;
+  size: "lg" | "md" | "sm";
+}) {
+  const avatarSize = size === "lg" ? "h-20 w-20" : size === "md" ? "h-14 w-14" : "h-11 w-11";
+  const ringClass =
+    size === "lg" ? "ring-2 ring-primary/40" : size === "md" ? "ring-1 ring-primary/20" : "";
+  const nameClass =
+    size === "lg" ? "text-base font-semibold" : size === "md" ? "text-sm font-medium" : "text-sm font-medium";
+  const positionClass = size === "lg" ? "text-sm" : "text-xs";
+  const width = size === "lg" ? "w-40" : size === "md" ? "w-32" : "w-28";
+
+  return (
+    <div className={`flex flex-col items-center text-center gap-2 ${width}`}>
+      <Avatar className={`${avatarSize} border ${ringClass}`}>
+        {member.member_photo && (
+          <AvatarImage src={member.member_photo} alt={member.member_name ?? ""} />
+        )}
+        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+          {getInitials(member.member_name)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 w-full">
+        <p className={`${nameClass} leading-snug break-words`}>
+          {member.member_name ?? "—"}
+        </p>
+        <p className={`${positionClass} text-muted-foreground capitalize`}>
+          {formatPosition(member.position)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export function CommitteeWidget() {
   const t = useTranslations("dashboard.committeeMembers");
   const { data, isLoading } = useListCommitteeMembers({ status: "active" as any });
 
-  const allMembers = (data?.results ?? [])
+  const members = (data?.results ?? [])
     .filter((m) => m.status === "active")
     .sort((a, b) => {
       const priorityDiff =
@@ -47,11 +88,12 @@ export function CommitteeWidget() {
       return (a.member_name ?? "").localeCompare(b.member_name ?? "");
     }) as CommitteeMemberWithPhoto[];
 
-  const members = allMembers.slice(0, DISPLAY_LIMIT);
-  const remaining = Math.max(0, allMembers.length - DISPLAY_LIMIT);
+  const chair = members.filter((m) => getTier(m.position) === 1);
+  const officers = members.filter((m) => getTier(m.position) === 2);
+  const generalMembers = members.filter((m) => getTier(m.position) === 3);
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
@@ -76,38 +118,34 @@ export function CommitteeWidget() {
             {t("empty")}
           </p>
         ) : (
-          <ul className="space-y-3">
-            {members.map((member) => (
-              <li key={member.id} className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border">
-                  {member.photo && (
-                    <AvatarImage src={member.photo} alt={member.member_name ?? ""} />
-                  )}
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                    {getInitials(member.member_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {member.member_name ?? t("unnamed")}
-                  </p>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {formatPosition(member.position)}
-                  </p>
-                </div>
-              </li>
-            ))}
-            {remaining > 0 && (
-              <li className="text-center pt-1">
-                <Link
-                  href="/governance/committee-members"
-                  className="text-xs text-muted-foreground hover:text-primary"
-                >
-                  {t("more", { count: remaining })}
-                </Link>
-              </li>
+          <div className="space-y-6">
+            {/* Tier 1: Chair */}
+            {chair.length > 0 && (
+              <div className="flex justify-center pb-5 border-b">
+                {chair.map((member) => (
+                  <MemberCard key={member.id} member={member} size="lg" />
+                ))}
+              </div>
             )}
-          </ul>
+
+            {/* Tier 2: Officers */}
+            {officers.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-x-8 gap-y-5 pb-5 border-b">
+                {officers.map((member) => (
+                  <MemberCard key={member.id} member={member} size="md" />
+                ))}
+              </div>
+            )}
+
+            {/* Tier 3: General members */}
+            {generalMembers.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-4">
+                {generalMembers.map((member) => (
+                  <MemberCard key={member.id} member={member} size="sm" />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

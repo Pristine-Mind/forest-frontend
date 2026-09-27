@@ -7,13 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Home, Axe, Banknote, ShieldAlert, BadgeDollarSign } from "lucide-react";
 import { useListHarvestRequests, useGetAnnualDfoReport } from "@/lib/api";
 import { CommitteeWidget } from "@/components/dashboard/CommitteeWidget";
-import { CommitteeQuotaWidget } from "@/components/dashboard/CommitteeQuotaWidget";
+import { LatestProgramWidget } from "@/components/dashboard/LatestProgramWidget";
 
-const ForestBoundaryMap = dynamic(
-  () => import("@/components/dashboard/ForestBoundaryMap").then((m) => m.ForestBoundaryMap),
-  { ssr: false, loading: () => <div className="h-[420px] w-full rounded-lg border bg-muted animate-pulse" /> }
-);
-
+// inside your dashboard grid
 function Dashboard() {
   const t = useTranslations();
   const { data: dfoReport, isLoading } = useGetAnnualDfoReport();
@@ -61,19 +57,23 @@ function Dashboard() {
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-4 items-start">
+      <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-1 items-start">
         <Card className="lg:col-span-2 xl:col-span-3">
+          <Card className="lg:col-span-2 xl:col-span-3">
           <CardHeader>
-            <CardTitle>Forest Block Boundaries</CardTitle>
+            <CardTitle>Latest Program</CardTitle>
           </CardHeader>
           <CardContent>
-            <ForestBoundaryMap />
+            <LatestProgramWidget />
           </CardContent>
         </Card>
-        <div className="lg:col-span-1 space-y-6">
-          <CommitteeWidget />
-          <CommitteeQuotaWidget />
-        </div>
+          <CardHeader>
+            <CardTitle>Committee Members Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CommitteeWidget />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

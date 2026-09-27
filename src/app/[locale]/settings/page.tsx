@@ -9,7 +9,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import Image from "next/image";
 import { adToBs } from "@/components/ui/nepali-date-input";
-
+import dynamic from "next/dynamic";
 
 import {
   useListPriceRates,
@@ -88,6 +88,12 @@ const priceRateSchema = z.object({
 });
 
 type PriceRateFormValues = z.infer<typeof priceRateSchema>;
+
+const ForestBoundaryMap = dynamic(
+  () => import("@/components/dashboard/ForestBoundaryMap").then((m) => m.ForestBoundaryMap),
+  { ssr: false, loading: () => <div className="h-[420px] w-full rounded-lg border bg-muted animate-pulse" /> }
+);
+
 
 function PriceRateForm({
   defaultValues,
@@ -1300,6 +1306,7 @@ function BoundariesTab() {
         </div>
       </CardHeader>
       <CardContent>
+        <ForestBoundaryMap />
         {isLoading ? (
           <div className="space-y-2">
             {[...Array(5)].map((_, i) => (

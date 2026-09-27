@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ function HouseholdsList() {
   const tCommon = useTranslations("common");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ url: string; name: string } | null>(null);
   const pageSize = 10;
 
   // Calculate limit and offset based on page and pageSize
@@ -244,7 +246,12 @@ function HouseholdsList() {
                         <TableCell>{h.english_name || "—"}</TableCell>
                         <TableCell>
                           {h.photo ? (
-                            <img src={h.photo} alt={h.household_head_name} className="w-12 h-12 rounded-full object-cover" />
+                            <img
+                              src={h.photo}
+                              alt={h.household_head_name}
+                              className="w-12 h-12 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                              onClick={() => setSelectedPhoto({ url: h.photo!, name: h.household_head_name })}
+                            />
                           ) : (
                             <span className="text-muted-foreground text-xs">No Photo</span>
                           )}
@@ -321,6 +328,22 @@ function HouseholdsList() {
           )}
         </CardContent>
       </Card>
+
+      {/* Photo Preview Modal */}
+      <Dialog open={!!selectedPhoto} onOpenChange={(open) => !open && setSelectedPhoto(null)}>
+        <DialogContent className="max-w-2xl">
+          {selectedPhoto && (
+            <div className="flex flex-col items-center gap-4">
+              <img
+                src={selectedPhoto.url}
+                alt={selectedPhoto.name}
+                className="max-h-[70vh] w-auto rounded-lg object-contain"
+              />
+              <p className="text-sm text-muted-foreground">{selectedPhoto.name}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
