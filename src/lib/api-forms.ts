@@ -1252,3 +1252,257 @@ export function getListTimberLogEntriesQueryKey(params?: {
 }): readonly unknown[] {
   return timberLogEntryKeys.list(params);
 }
+
+// ─── Program Types ──────────────────────────────────────────────────────────
+
+export interface ProgramImagePayload {
+  id?: number;
+  image?: File;
+  caption?: string;
+  order: number;
+}
+
+export interface ProgramImageResponse {
+  id: number;
+  image_url: string;
+  caption: string;
+  order: number;
+}
+
+export interface ProgramPayload {
+  title: string;
+  description?: string;
+  date: string;
+  images?: Array<{
+    caption?: string;
+    order: number;
+  }>;
+}
+
+export interface ProgramResponse {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  images: ProgramImageResponse[];
+  created_at: string;
+}
+
+export interface ProgramListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProgramResponse[];
+}
+
+// ─── Program API Functions ──────────────────────────────────────────────────
+
+export async function listPrograms(params?: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+  page?: number;
+  page_size?: number;
+}): Promise<ProgramListResponse> {
+  const query = new URLSearchParams();
+  if (params?.search) query.append("search", params.search);
+  if (params?.limit !== undefined) query.append("limit", params.limit.toString());
+  if (params?.offset !== undefined) query.append("offset", params.offset.toString());
+  if (params?.page) query.append("page", params.page.toString());
+  if (params?.page_size) query.append("page_size", params.page_size.toString());
+
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/programs/?${query.toString()}`;
+
+  return customFetch(url, {
+    method: "GET",
+    headers: { ...authHeaders() },
+  });
+}
+
+export async function getProgram(id: number): Promise<ProgramResponse> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/programs/${id}/`;
+
+  return customFetch(url, {
+    method: "GET",
+    headers: { ...authHeaders() },
+  });
+}
+
+export async function createProgram(data: ProgramPayload): Promise<ProgramResponse> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/programs/`;
+
+  return customFetch(url, {
+    method: "POST",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateProgram(
+  id: number,
+  data: Partial<ProgramPayload>
+): Promise<ProgramResponse> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/programs/${id}/`;
+
+  return customFetch(url, {
+    method: "PATCH",
+    headers: { ...authHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteProgram(id: number): Promise<void> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/programs/${id}/`;
+
+  return customFetch(url, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+  });
+}
+
+// ─── Program Image API Functions ────────────────────────────────────────────
+// Separate endpoint for uploading a single image file to an existing program
+// (multipart/form-data, since ProgramPayload above is JSON-only and can't carry files)
+
+export async function createProgramImage(
+  programId: number,
+  file: File,
+  caption?: string,
+  order?: number
+): Promise<ProgramImageResponse> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/program-images/`;
+
+  const formData = new FormData();
+  formData.append("program", programId.toString());
+  formData.append("image", file);
+  if (caption) formData.append("caption", caption);
+  if (order !== undefined) formData.append("order", order.toString());
+
+  return customFetch(url, {
+    method: "POST",
+    headers: { ...authHeaders() }, // no Content-Type — browser sets multipart boundary
+    body: formData,
+  });
+}
+
+export async function deleteProgramImage(id: number): Promise<void> {
+  const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/governance/program-images/${id}/`;
+
+  return customFetch(url, {
+    method: "DELETE",
+    headers: { ...authHeaders() },
+  });
+}
+
+// ─── React Query Keys ───────────────────────────────────────────────────────
+
+export const programKeys = {
+  all: ["programs"] as const,
+  lists: () => [...programKeys.all, "list"] as const,
+  list: (filters?: Record<string, unknown>) => [...programKeys.lists(), { ...filters }] as const,
+  details: () => [...programKeys.all, "detail"] as const,
+  detail: (id: number) => [...programKeys.details(), id] as const,
+};
+
+// ─── React Query Hooks - Programs ───────────────────────────────────────────
+
+export function useListPrograms<TData = ProgramListResponse>(
+  params?: {
+    search?: string;
+    limit?: number;
+    offset?: number;
+    page?: number;
+    page_size?: number;
+  },
+  options?: UseQueryOptions<ProgramListResponse, Error, TData>
+): UseQueryResult<TData, Error> {
+  return useQuery<ProgramListResponse, Error, TData>({
+    queryKey: programKeys.list(params),
+    queryFn: () => listPrograms(params),
+    ...options,
+  });
+}
+
+export function useGetProgram<TData = ProgramResponse>(
+  id: number,
+  options?: UseQueryOptions<ProgramResponse, Error, TData>
+): UseQueryResult<TData, Error> {
+  return useQuery<ProgramResponse, Error, TData>({
+    queryKey: programKeys.detail(id),
+    queryFn: () => getProgram(id),
+    enabled: !!id,
+    ...options,
+  });
+}
+
+export function useCreateProgram(
+  options?: UseMutationOptions<ProgramResponse, Error, { data: ProgramPayload }>
+): UseMutationResult<ProgramResponse, Error, { data: ProgramPayload }> {
+  return useMutation({
+    mutationFn: ({ data }) => createProgram(data),
+    ...options,
+  });
+}
+
+export function useUpdateProgram(
+  options?: UseMutationOptions<
+    ProgramResponse,
+    Error,
+    { id: number; data: Partial<ProgramPayload> }
+  >
+): UseMutationResult<ProgramResponse, Error, { id: number; data: Partial<ProgramPayload> }> {
+  return useMutation({
+    mutationFn: ({ id, data }) => updateProgram(id, data),
+    ...options,
+  });
+}
+
+export function useDeleteProgram(
+  options?: UseMutationOptions<void, Error, { id: number }>
+): UseMutationResult<void, Error, { id: number }> {
+  return useMutation({
+    mutationFn: ({ id }) => deleteProgram(id),
+    ...options,
+  });
+}
+
+// ─── React Query Hooks - Program Images ─────────────────────────────────────
+
+export function useCreateProgramImage(
+  options?: UseMutationOptions<
+    ProgramImageResponse,
+    Error,
+    { programId: number; file: File; caption?: string; order?: number }
+  >
+): UseMutationResult<
+  ProgramImageResponse,
+  Error,
+  { programId: number; file: File; caption?: string; order?: number }
+> {
+  return useMutation({
+    mutationFn: ({ programId, file, caption, order }) =>
+      createProgramImage(programId, file, caption, order),
+    ...options,
+  });
+}
+
+export function useDeleteProgramImage(
+  options?: UseMutationOptions<void, Error, { id: number }>
+): UseMutationResult<void, Error, { id: number }> {
+  return useMutation({
+    mutationFn: ({ id }) => deleteProgramImage(id),
+    ...options,
+  });
+}
+
+// ─── Query Key Helper ───────────────────────────────────────────────────────
+
+export function getListProgramsQueryKey(params?: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+  page?: number;
+  page_size?: number;
+}): readonly unknown[] {
+  return programKeys.list(params);
+}

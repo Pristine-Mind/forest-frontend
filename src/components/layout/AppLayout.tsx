@@ -9,6 +9,7 @@ import {
   Trees, Users, Sprout, Axe, Package,
   Map, ReceiptText, ShieldCheck, Banknote,
   Leaf, Gavel, BarChart3, LogOut, Menu, Settings2, FileText, Bell,
+  BellDotIcon, Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { href: "/timber-log", labelKey: "timber-log", icon: Trees },
   { href: "/reports", labelKey: "reports", icon: BarChart3 },
   { href: "/settings", labelKey: "settings", icon: Settings2 },
+  { href: "/program", labelKey: "program", icon: Award }
 ];
 
 function NavLinks() {
@@ -41,10 +43,8 @@ function NavLinks() {
   const t = useTranslations("nav");
   const { can } = useAuthStore();
 
-  // Filter navigation items based on user role
   const filteredItems = NAV_ITEMS.filter((item) => {
-    // Only show notifications to committee chair
-    if (item.href === "/notifications" && !can(["committee_chair"])) {
+    if ((item.href === "/notifications" || item.href === '/program') && !can(["committee_chair"])) {
       return false;
     }
     return true;
@@ -106,13 +106,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] bg-sidebar border-r-sidebar-border p-4 flex flex-col">
-            <div className="flex items-center gap-2 mb-8 mt-4 text-sidebar-foreground">
+          <SheetContent side="left" className="w-[280px] bg-sidebar border-r-sidebar-border p-4 flex flex-col h-[100dvh]">
+            <div className="flex items-center gap-2 mb-8 mt-4 text-sidebar-foreground flex-shrink-0">
               <Trees className="h-6 w-6 text-primary-foreground" />
               <span className="font-semibold text-lg">CFUG System</span>
             </div>
-            <div className="flex-1 overflow-y-auto"><NavLinks /></div>
-            <div className="mt-auto pt-4 border-t border-sidebar-border text-sidebar-foreground space-y-3">
+            <div className="flex-1 min-h-0 overflow-y-auto"><NavLinks /></div>
+            <div className="flex-shrink-0 pt-4 border-t border-sidebar-border text-sidebar-foreground space-y-3">
               <div className="px-2">
                 <p className="text-sm font-medium">{user?.first_name} {user?.last_name}</p>
                 <p className="text-xs text-sidebar-foreground/60">{user?.role}</p>
@@ -130,8 +130,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border flex-shrink-0">
-        <div className="p-6 flex items-center gap-3 text-sidebar-foreground">
+      <aside className="hidden md:flex flex-col w-64 h-[100dvh] sticky top-0 bg-sidebar border-r border-sidebar-border flex-shrink-0">
+        <div className="p-6 flex items-center gap-3 text-sidebar-foreground flex-shrink-0">
           <div className="bg-primary/20 p-2 rounded-lg">
             <Trees className="h-6 w-6 text-primary-foreground" />
           </div>
@@ -140,8 +140,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <span className="text-xs font-medium text-sidebar-foreground/70 uppercase tracking-wider block">Management</span>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-3 py-2"><NavLinks /></div>
-        <div className="p-4 border-t border-sidebar-border text-sidebar-foreground space-y-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2"><NavLinks /></div>
+        <div className="flex-shrink-0 p-4 border-t border-sidebar-border text-sidebar-foreground space-y-3">
           <div className="px-2">
             <LocaleSwitcher />
           </div>

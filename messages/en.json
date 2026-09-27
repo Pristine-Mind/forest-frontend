@@ -17,7 +17,9 @@
     "settings": "Settings",
     "bank-transactions": "Bank Transactions",
     "timber-log": "Timber Log",
-    "forestProductsReceipts": "Forest Product Receipts"
+    "forestProductsReceipts": "Forest Product Receipts",
+    "program": "Program"
+    
   },
   "auth": {
     "login": "Login",
@@ -93,6 +95,16 @@
       "quotaMet": "Met",
       "quotaNotMet": "Not Met",
       "empty": "Quota data unavailable."
+    },
+    "latestProgram": {
+      "title": "Latest Program",
+      "view": "View Program",
+      "empty": "No recent programs."
+    },
+    "programs": {
+      "latestTitle": "Program",
+      "viewAll": "View Program",
+      "empty": "No programs available."
     }
   },
   "forms": {
@@ -1360,5 +1372,28 @@
     "title": "श्री शिवगंगा सामुदायिक वन",
     "emailPlaceholder": "name@example.com",
     "passwordPlaceholder": "••••••••"
-  }
+  },
+  "programs": {
+      "title": "Programs",
+      "viewAll": "View all",
+      "empty": "No programs yet.",
+      "noImages": "No images added",
+      "previousImage": "Previous image",
+      "nextImage": "Next image",
+      "addImage": "Add Image",
+      "addProgram": "Add Program",
+      "searchPlaceholder": "Search programs...",
+      "subtitle": "Manage and view all programs.",
+      "editProgram": "Edit Program",
+      "save": "Save Program",
+      "deleteProgram": "Delete Program",
+      "editProgramSubtitle": "Edit the details of the program.",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "dateLabel": "Date",
+      "images": "Images",
+      "view": "View Program",
+      "edit": "Edit Program",
+      "backToPrograms": "Back to Programs"
+    }
 }

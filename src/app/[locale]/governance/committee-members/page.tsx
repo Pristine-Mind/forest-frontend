@@ -136,7 +136,7 @@ function CommitteeMembersList() {
                     <TableRow key={c.id}>
                       <TableCell>
                         <Avatar className="h-9 w-9 border">
-                          {member.photo && <AvatarImage src={member.photo} alt={member.member_name ?? ""} />}
+                          {member.member_photo && <AvatarImage src={member.member_photo} alt={member.member_name ?? ""} />}
                           <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                             {getInitials(member.member_name)}
                           </AvatarFallback>
