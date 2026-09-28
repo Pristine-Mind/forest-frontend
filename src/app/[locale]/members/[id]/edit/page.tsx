@@ -63,6 +63,7 @@ function HouseholdEdit({ id }: { id: number }) {
     entry_fee_type: z.enum(["new_household", "split_household"] as const),
     status: z.enum(["active", "inactive"] as const),
     photo: z.instanceof(File).optional(),
+    email: z.string().email().optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -91,6 +92,7 @@ function HouseholdEdit({ id }: { id: number }) {
       entry_fee_type: "new_household",
       status: "active",
       photo: undefined,
+      email: "",
     },
   });
 
@@ -120,6 +122,7 @@ function HouseholdEdit({ id }: { id: number }) {
         entry_fee_type: household.entry_fee_type as EntryFeeType,
         status: household.status as HouseholdStatus,
         photo: undefined,
+        email: household.email || "",
       });
     }
   }, [household, form.reset]);
@@ -147,6 +150,7 @@ function HouseholdEdit({ id }: { id: number }) {
       registration_date: values.registration_date,
       entry_fee_type: values.entry_fee_type as EntryFeeType,
       photo: values.photo,
+      email: values.email,
     };
 
     updateHousehold.mutate(
@@ -192,6 +196,9 @@ function HouseholdEdit({ id }: { id: number }) {
                 )} />
                 <FormField control={form.control} name="contact_number" render={({ field }) => (
                   <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} placeholder="e.g., 9812345678" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem><FormLabel>{t("email")}</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="tole" render={({ field }) => (
                   <FormItem><FormLabel>{t("toleSettlement")}</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
