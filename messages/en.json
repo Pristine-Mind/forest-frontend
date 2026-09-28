@@ -1395,5 +1395,20 @@
       "view": "View Program",
       "edit": "Edit Program",
       "backToPrograms": "Back to Programs"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "description": "Enter your current password and choose a new one.",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Update password",
+      "saving": "Updating...",
+      "success": "Password updated successfully",
+      "failed": "Could not update password. Please try again.",
+      "tooShort": "Password must be at least 8 characters.",
+      "mismatch": "Passwords do not match.",
+      "show": "Show password",
+      "hide": "Hide password"
     }
 }
