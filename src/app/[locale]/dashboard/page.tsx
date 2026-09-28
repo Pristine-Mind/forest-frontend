@@ -1,10 +1,12 @@
 "use client";
 import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+import { Link } from "@/i18n/routing";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Home, Axe, Banknote, ShieldAlert, BadgeDollarSign } from "lucide-react";
+import { Users, Home, Axe, Banknote, ShieldAlert, BadgeDollarSign, KeyRound } from "lucide-react";
 import { useListHarvestRequests, useGetAnnualDfoReport } from "@/lib/api";
 import { CommitteeWidget } from "@/components/dashboard/CommitteeWidget";
 import { LatestProgramWidget } from "@/components/dashboard/LatestProgramWidget";
@@ -37,9 +39,17 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
-        <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("dashboard.title")}</h1>
+          <p className="text-muted-foreground mt-2">{t("dashboard.subtitle")}</p>
+        </div>
+        <Button asChild variant="outline" className="shrink-0">
+          <Link href="/dashboard/change-password" aria-label={t("changePassword.title")}>
+            <KeyRound className="h-4 w-4 sm:me-2" />
+            <span className="hidden sm:inline">{t("changePassword.title")}</span>
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -60,13 +70,13 @@ function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-3 xl:grid-cols-1 items-start">
         <Card className="lg:col-span-2 xl:col-span-3">
           <Card className="lg:col-span-2 xl:col-span-3">
-          <CardHeader>
-            <CardTitle>Latest Program</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <LatestProgramWidget />
-          </CardContent>
-        </Card>
+            <CardHeader>
+              <CardTitle>Latest Program</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LatestProgramWidget />
+            </CardContent>
+          </Card>
           <CardHeader>
             <CardTitle>Committee Members Dashboard</CardTitle>
           </CardHeader>
