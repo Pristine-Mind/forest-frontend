@@ -105,6 +105,10 @@ function MemberDetail({ id }: { id: number }) {
               <p>{(household as any).photo ? <img src={(household as any).photo} alt={household.household_head_name} className="w-12 h-12 rounded-full object-cover" /> : <span className="text-muted-foreground">No Photo</span> }</p>
             </div>
             <div>
+              <p className="text-sm font-medium text-muted-foreground">{t("email")}</p>
+              <p>{household.email || "N/A"}</p>
+            </div>
+            <div>
               <p className="text-sm font-medium text-muted-foreground">{t("tole")}</p>
               <p>{household.tole || "N/A"}</p>
             </div>

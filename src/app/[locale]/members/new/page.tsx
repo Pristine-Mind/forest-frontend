@@ -61,6 +61,7 @@ function MemberNew() {
     entry_fee_type: z.enum(["new_household", "split_household"] as const),
     status: z.enum(["active", "inactive"] as const),
     photo: z.instanceof(File).optional(),
+    email: z.string().email().optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
@@ -93,6 +94,7 @@ function MemberNew() {
       entry_fee_type: "new_household",
       status: "active",
       photo: undefined,
+      email: "",
     },
   });
 
@@ -119,6 +121,7 @@ function MemberNew() {
       registration_date: values.registration_date,
       entry_fee_type: values.entry_fee_type as EntryFeeType,
       photo: values.photo,
+      email: values.email,
     };
 
     createHousehold.mutate(payload, {
@@ -154,6 +157,9 @@ function MemberNew() {
                 )} />
                 <FormField control={form.control} name="citizenship_no" render={({ field }) => (
                   <FormItem><FormLabel>Citizenship No.</FormLabel><FormControl><Input {...field} placeholder="e.g., 56789-2087-123456" /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem><FormLabel>{t("email")}</FormLabel><FormControl><Input {...field} type="email" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="contact_number" render={({ field }) => (
                   <FormItem><FormLabel>Contact Number</FormLabel><FormControl><Input {...field} placeholder="e.g., 9812345678" /></FormControl><FormMessage /></FormItem>
