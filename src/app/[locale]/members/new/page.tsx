@@ -61,7 +61,7 @@ function MemberNew() {
     entry_fee_type: z.enum(["new_household", "split_household"] as const),
     status: z.enum(["active", "inactive"] as const),
     photo: z.instanceof(File).optional(),
-    email: z.string().email().optional(),
+    email: z.string().optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
