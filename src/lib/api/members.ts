@@ -1,6 +1,7 @@
 import {
   useQuery,
   useMutation,
+  useQueryClient,
   UseQueryOptions,
   UseQueryResult,
   UseMutationOptions,
@@ -12,6 +13,7 @@ export type WealthClass = "rich" | "medium" | "poor";
 export type MembershipType = "general" | "lifetime" | "institutional" | "special" | "other";
 export type MembershipStatus = "active" | "inactive" | "cancelled";
 export type HouseholdStatus = "active" | "inactive";
+export type HouseholdApprovalStatus = "pending" | "approved" | "rejected";
 export type EducationLevel = "illiterate" | "basic" | "secondary_plus";
 export type EntryFeeType = "new_household" | "split_household";
 export type FeeTier = "on_time" | "overdue_3yr" | "overdue_5yr" | "overdue_5yr_plus";
@@ -43,6 +45,10 @@ export interface Household {
   created_at: string;
   updated_at: string;
   contact_number?: string;
+  approval_status?: HouseholdApprovalStatus;
+  approved_by?: number | null;
+  approved_at?: string | null;
+  rejection_reason?: string;
 }
 
 export interface HouseholdInput {
@@ -331,6 +337,23 @@ export async function getHousehold(id: number, options?: RequestInit): Promise<H
   return customFetch<Household>(buildUrl(`/households/${id}/`), { ...options });
 }
 
+export async function approveHousehold(id: number): Promise<Household> {
+  return customFetch<Household>(buildUrl(`/households/${id}/approve/`), {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function rejectHousehold(
+  id: number,
+  rejectionReason?: string
+): Promise<Household> {
+  return customFetch<Household>(buildUrl(`/households/${id}/reject/`), {
+    method: "POST",
+    body: JSON.stringify(rejectionReason ? { rejection_reason: rejectionReason } : {}),
+  });
+}
+
 export async function createHousehold(
   data: HouseholdInput,
   options?: RequestInit
@@ -576,16 +599,58 @@ export function useListHouseholds<TData = Awaited<ReturnType<typeof listHousehol
 
 export function useGetHousehold<TData = Awaited<ReturnType<typeof getHousehold>>>(
   id: number,
-  options?: UseQueryOptions<
-    Awaited<ReturnType<typeof getHousehold>>,
-    Error,
-    TData
+  options?: Omit<
+    UseQueryOptions<Awaited<ReturnType<typeof getHousehold>>, Error, TData>,
+    "queryKey" | "queryFn"
   >
 ) {
   return useQuery({
     queryKey: [`/api/v1/members/households/${id}/`],
     queryFn: () => getHousehold(id),
     ...options,
+  });
+}
+
+export function useApproveHousehold() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: approveHousehold,
+    onSuccess: (household) => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/v1/members/households/${household.id}/`],
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (_error, id) => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/v1/members/households/${id}/`],
+      });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}
+
+export function useRejectHousehold() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, rejectionReason }: { id: number; rejectionReason?: string }) =>
+      rejectHousehold(id, rejectionReason),
+    onSuccess: (household) => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/v1/members/households/${household.id}/`],
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/members/households/"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+    onError: (_error, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [`/api/v1/members/households/${id}/`],
+      });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
   });
 }
 

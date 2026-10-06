@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuthStore, WRITE_ROLES } from "@/stores/auth-store";
 
+const PAGE_SIZE = 20;
+
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive"> = {
   paid: "default",
   due: "destructive",
@@ -32,11 +34,19 @@ function FeeCollectionsList() {
   const { can } = useAuthStore();
   const [feeType, setFeeType] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
+  const [page, setPage] = useState(1);
+
+  const offset = (page - 1) * PAGE_SIZE;
 
   const { data, isLoading } = useListFeeCollections({
     fee_type: feeType !== "all" ? feeType : undefined,
     payment_status: paymentStatus !== "all" ? paymentStatus : undefined,
+    limit: PAGE_SIZE,
+    offset,
   });
+
+  const total = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-6">
@@ -52,7 +62,13 @@ function FeeCollectionsList() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Select value={feeType} onValueChange={setFeeType}>
+        <Select
+          value={feeType}
+          onValueChange={(v) => {
+            setFeeType(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-44"><SelectValue placeholder={t("filterFeeType")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("filterAllTypes")}</SelectItem>
@@ -63,7 +79,13 @@ function FeeCollectionsList() {
             <SelectItem value="other">{t("feeTypeOther")}</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={paymentStatus} onValueChange={setPaymentStatus}>
+        <Select
+          value={paymentStatus}
+          onValueChange={(v) => {
+            setPaymentStatus(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-44"><SelectValue placeholder={t("filterPaymentStatus")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("filterAllStatuses")}</SelectItem>
@@ -77,41 +99,76 @@ function FeeCollectionsList() {
       <Card>
         <CardContent className="pt-6">
           {isLoading ? <div>{tCommon("loading")}</div> : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("tableMember")}</TableHead>
-                  <TableHead>{t("tableType")}</TableHead>
-                  <TableHead className="text-right">{t("tableAmount")}</TableHead>
-                  <TableHead className="text-right">{t("tablePaid")}</TableHead>
-                  <TableHead>{t("tableStatus")}</TableHead>
-                  <TableHead>{t("tableReceipt")}</TableHead>
-                  <TableHead>{t("tableActions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data?.results.map((f) => (
-                  <TableRow key={f.id}>
-                    <TableCell>{f.member_name || "N/A"}</TableCell>
-                    <TableCell className="capitalize">{t(FEE_TYPE_KEYS[f.fee_type] as any)}</TableCell>
-                    <TableCell className="text-right">{f.amount}</TableCell>
-                    <TableCell className="text-right">{f.amount_paid}</TableCell>
-                    <TableCell>
-                      <Badge variant={STATUS_VARIANT[f.payment_status ?? "due"] ?? "secondary"} className="capitalize">
-                        {f.payment_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{f.receipt_no ?? "—"}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" asChild><Link href={`/billing/fee-collections/${f.id}`}>{t("viewEdit")}</Link></Button>
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("tableMember")}</TableHead>
+                    <TableHead>{t("tableType")}</TableHead>
+                    <TableHead className="text-right">{t("tableAmount")}</TableHead>
+                    <TableHead className="text-right">{t("tablePaid")}</TableHead>
+                    <TableHead>{t("tableStatus")}</TableHead>
+                    <TableHead>{t("tableReceipt")}</TableHead>
+                    <TableHead>{t("tableActions")}</TableHead>
                   </TableRow>
-                ))}
-                {(!data?.results || data.results.length === 0) && (
-                  <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">{t("empty")}</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {data?.results.map((f) => (
+                    <TableRow key={f.id}>
+                      <TableCell>{f.member_name || "N/A"}</TableCell>
+                      <TableCell className="capitalize">{t(FEE_TYPE_KEYS[f.fee_type] as any)}</TableCell>
+                      <TableCell className="text-right">{f.amount}</TableCell>
+                      <TableCell className="text-right">{f.amount_paid}</TableCell>
+                      <TableCell>
+                        <Badge variant={STATUS_VARIANT[f.payment_status ?? "due"] ?? "secondary"} className="capitalize">
+                          {f.payment_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{f.receipt_no ?? "—"}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" asChild><Link href={`/billing/fee-collections/${f.id}`}>{t("viewEdit")}</Link></Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {(!data?.results || data.results.length === 0) && (
+                    <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">{t("empty")}</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {total > 0 && (
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t("showing", {
+                      from: offset + 1,
+                      to: Math.min(offset + PAGE_SIZE, total),
+                      total,
+                    })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      {tCommon("previous")}
+                    </Button>
+                    <span className="text-sm">
+                      {t("pageOf", { page, totalPages })}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      {tCommon("next")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

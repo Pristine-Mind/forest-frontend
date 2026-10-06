@@ -5,6 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { useAuthStore } from "@/stores/auth-store";
 import { useListNotifications, useMarkNotificationAsRead, useMarkAllAsRead } from "@/hooks/use-notifications";
 import { useApproveCashTransaction, useRejectCashTransaction } from "@/hooks/use-cash-transactions";
+import { useApproveHousehold, useGetHousehold, useRejectHousehold } from "@/lib/api/members";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,15 +50,34 @@ function NotificationItem({
   onDelete,
   onApprove,
   onReject,
+  onApproveHousehold,
+  onRejectHousehold,
+  isChair,
+  householdDecisionPending,
 }: {
   notification: Notification;
   onMarkAsRead: () => void;
   onDelete: () => void;
   onApprove?: (id: number) => void;
   onReject?: (id: number, reason: string) => void;
+  onApproveHousehold?: (id: number) => void;
+  onRejectHousehold?: (id: number, reason?: string) => void;
+  isChair: boolean;
+  householdDecisionPending: boolean;
 }) {
   const isUnread = notification.status === "unread";
   const isActionable = notification.action_required;
+  const isMemberRequest =
+    notification.notification_type === "member_request" &&
+    notification.content_type === "Household";
+  const { data: household, isLoading: isHouseholdLoading, error: householdError } =
+    useGetHousehold(notification.object_id, { enabled: isMemberRequest });
+  const canDecideMemberRequest =
+    isChair &&
+    isMemberRequest &&
+    notification.action_required &&
+    notification.status !== "actioned" &&
+    household?.approval_status === "pending";
   // More flexible cash transaction detection - check title, type, and content_type
   const isCashTransaction = 
     notification.title?.toLowerCase().includes("cash") ||
@@ -68,11 +88,15 @@ function NotificationItem({
   const [rejectReason, setRejectReason] = useState("");
 
   const handleReject = () => {
-    if (!rejectReason.trim()) {
+    if (!isMemberRequest && !rejectReason.trim()) {
       toast.error("Rejection reason is required");
       return;
     }
-    onReject?.(notification.id, rejectReason);
+    if (isMemberRequest) {
+      onRejectHousehold?.(notification.id, rejectReason.trim() || undefined);
+    } else {
+      onReject?.(notification.id, rejectReason.trim());
+    }
     setRejectOpen(false);
     setRejectReason("");
   };
@@ -118,13 +142,87 @@ function NotificationItem({
             <span>•</span>
             <span className="capitalize">{notification.notification_type.replace(/_/g, " ")}</span>
           </div>
+          {isMemberRequest && (
+            <div className="mt-3 rounded-md bg-background/70 px-3 py-2 text-sm">
+              {isHouseholdLoading ? (
+                <span className="text-muted-foreground">Loading household details…</span>
+              ) : householdError ? (
+                <span className="text-destructive">
+                  Household details unavailable: {householdError.message}
+                </span>
+              ) : household ? (
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <span>Household: <strong>{household.household_head_name}</strong></span>
+                  <span>Tole: <strong>{household.tole}</strong></span>
+                  {household.contact_number && (
+                    <span>Contact: <strong>{household.contact_number}</strong></span>
+                  )}
+                  <span>
+                    Approval status: <strong className="capitalize">{household.approval_status ?? "unknown"}</strong>
+                  </span>
+                  {household.rejection_reason && (
+                    <span>Rejection reason: {household.rejection_reason}</span>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-2 mt-3 flex-wrap">
+        {canDecideMemberRequest && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={householdDecisionPending}
+              onClick={() => onApproveHousehold?.(notification.id)}
+              className="text-xs text-green-600 hover:text-green-600"
+            >
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Approve
+            </Button>
+            <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={householdDecisionPending}
+                onClick={() => setRejectOpen(true)}
+                className="text-xs text-destructive hover:text-destructive"
+              >
+                <XCircle className="h-3 w-3 mr-1" /> Reject
+              </Button>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reject Household Request</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Optionally provide a reason for rejecting this household request.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <Textarea
+                  placeholder="Rejection reason (optional)..."
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  rows={3}
+                />
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setRejectReason("")}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    disabled={householdDecisionPending}
+                    onClick={handleReject}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Reject
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
+
         {/* Approve Button - Only for actionable cash transactions */}
-        {isActionable && isCashTransaction && onApprove && (
+        {!isMemberRequest && isActionable && isCashTransaction && onApprove && (
           <Button
             variant="outline"
             size="sm"
@@ -136,7 +234,7 @@ function NotificationItem({
         )}
 
         {/* Reject Button - Only for actionable cash transactions */}
-        {isActionable && isCashTransaction && onReject && (
+        {!isMemberRequest && isActionable && isCashTransaction && onReject && (
           <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
             <Button
               variant="outline"
@@ -215,6 +313,10 @@ function NotificationsContent() {
   const markAllAsRead = useMarkAllAsRead();
   const approveCashTransaction = useApproveCashTransaction();
   const rejectCashTransaction = useRejectCashTransaction();
+  const approveHousehold = useApproveHousehold();
+  const rejectHousehold = useRejectHousehold();
+  const isChair = can(["committee_chair"]);
+  const householdDecisionPending = approveHousehold.isPending || rejectHousehold.isPending;
   const [statusFilter, setStatusFilter] = useState<NotificationStatus | "all">("all");
 
   const notifications = notificationsData?.results ?? [];
@@ -285,6 +387,47 @@ function NotificationsContent() {
           const msg = error?.response?.data?.detail || "Failed to reject transaction";
           toast.error(msg);
         },
+      }
+    );
+  };
+
+  const handleApproveHousehold = (notificationId: number) => {
+    const notification = notifications.find((n) => n.id === notificationId);
+    if (
+      !notification ||
+      notification.notification_type !== "member_request" ||
+      notification.content_type !== "Household" ||
+      !notification.action_required ||
+      notification.status === "actioned" ||
+      !isChair
+    ) {
+      return;
+    }
+
+    approveHousehold.mutate(notification.object_id, {
+      onSuccess: () => toast.success("Household request approved"),
+      onError: (error) => toast.error(error.message || "Failed to approve household request"),
+    });
+  };
+
+  const handleRejectHousehold = (notificationId: number, rejectionReason?: string) => {
+    const notification = notifications.find((n) => n.id === notificationId);
+    if (
+      !notification ||
+      notification.notification_type !== "member_request" ||
+      notification.content_type !== "Household" ||
+      !notification.action_required ||
+      notification.status === "actioned" ||
+      !isChair
+    ) {
+      return;
+    }
+
+    rejectHousehold.mutate(
+      { id: notification.object_id, rejectionReason },
+      {
+        onSuccess: () => toast.success("Household request rejected"),
+        onError: (error) => toast.error(error.message || "Failed to reject household request"),
       }
     );
   };
@@ -388,6 +531,10 @@ function NotificationsContent() {
                   onMarkAsRead={handleMarkAsRead}
                   onApprove={handleApprove}
                   onReject={handleReject}
+                  onApproveHousehold={handleApproveHousehold}
+                  onRejectHousehold={handleRejectHousehold}
+                  isChair={isChair}
+                  householdDecisionPending={householdDecisionPending}
                 />
               </TabsContent>
 
@@ -398,6 +545,10 @@ function NotificationsContent() {
                   onMarkAsRead={handleMarkAsRead}
                   onApprove={handleApprove}
                   onReject={handleReject}
+                  onApproveHousehold={handleApproveHousehold}
+                  onRejectHousehold={handleRejectHousehold}
+                  isChair={isChair}
+                  householdDecisionPending={householdDecisionPending}
                 />
               </TabsContent>
 
@@ -408,6 +559,10 @@ function NotificationsContent() {
                   onMarkAsRead={handleMarkAsRead}
                   onApprove={handleApprove}
                   onReject={handleReject}
+                  onApproveHousehold={handleApproveHousehold}
+                  onRejectHousehold={handleRejectHousehold}
+                  isChair={isChair}
+                  householdDecisionPending={householdDecisionPending}
                 />
               </TabsContent>
 
@@ -418,6 +573,10 @@ function NotificationsContent() {
                   onMarkAsRead={handleMarkAsRead}
                   onApprove={handleApprove}
                   onReject={handleReject}
+                  onApproveHousehold={handleApproveHousehold}
+                  onRejectHousehold={handleRejectHousehold}
+                  isChair={isChair}
+                  householdDecisionPending={householdDecisionPending}
                 />
               </TabsContent>
             </Tabs>
@@ -434,12 +593,20 @@ function NotificationsList({
   onMarkAsRead,
   onApprove,
   onReject,
+  onApproveHousehold,
+  onRejectHousehold,
+  isChair,
+  householdDecisionPending,
 }: {
   notifications: Notification[];
   isLoading: boolean;
   onMarkAsRead: (id: number) => void;
   onApprove?: (id: number) => void;
   onReject?: (id: number, reason: string) => void;
+  onApproveHousehold?: (id: number) => void;
+  onRejectHousehold?: (id: number, reason?: string) => void;
+  isChair: boolean;
+  householdDecisionPending: boolean;
 }) {
   if (isLoading) {
     return (
@@ -473,6 +640,10 @@ function NotificationsList({
             }}
             onApprove={onApprove}
             onReject={onReject}
+            onApproveHousehold={onApproveHousehold}
+            onRejectHousehold={onRejectHousehold}
+            isChair={isChair}
+            householdDecisionPending={householdDecisionPending}
           />
         ))}
       </div>

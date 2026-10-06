@@ -61,7 +61,9 @@
     "yes": "Yes",
     "no": "No",
     "confirm": "Confirm",
-    "clear": "Clear"
+    "clear": "Clear",
+    "previous": "Previous",
+    "next": "Next"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -265,7 +267,9 @@
       "rate": "Rate",
       "ratePlaceholder": "Enter the rate",
       "amount": "Total Amount",
-      "amountPlaceholder": "Enter the total amount"
+      "amountPlaceholder": "Enter the total amount",
+      "showing": "Showing {from}–{to} of {total}",
+      "pageOf": "Page {page} of {totalPages}"
     },
     "receipts": {
       "title": "Receipts",
@@ -286,7 +290,9 @@
       "tableIssuedDate": "Issued Date",
       "tablePdf": "PDF",
       "viewPdf": "View PDF",
-      "empty": "No receipts found."
+      "empty": "No receipts found.",
+      "showing": "Showing {from}–{to} of {total}",
+      "pageOf": "Page {page} of {totalPages}"
     }
   },
   "forest": {
