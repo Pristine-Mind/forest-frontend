@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 
+const PAGE_SIZE = 20;
+
 const REFERENCE_TYPE_KEYS: Record<string, string> = {
   sale: "referenceTypeSale",
   fee_collection: "referenceTypeFeeCollection",
@@ -29,11 +31,19 @@ function ReceiptsList() {
   const tCommon = useTranslations("common");
   const [referenceType, setReferenceType] = useState("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  const offset = (page - 1) * PAGE_SIZE;
 
   const { data, isLoading } = useListReceipts({
     reference_type: referenceType !== "all" ? referenceType : undefined,
     search: search || undefined,
+    limit: PAGE_SIZE,
+    offset,
   });
+
+  const total = data?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-6">
@@ -49,10 +59,19 @@ function ReceiptsList() {
         <Input
           placeholder={t("searchPlaceholder")}
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           className="max-w-xs"
         />
-        <Select value={referenceType} onValueChange={setReferenceType}>
+        <Select
+          value={referenceType}
+          onValueChange={(v) => {
+            setReferenceType(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-44"><SelectValue placeholder={t("filterReferenceType")} /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t("filterAllTypes")}</SelectItem>
@@ -66,44 +85,79 @@ function ReceiptsList() {
       <Card>
         <CardContent className="pt-6">
           {isLoading ? <div>{tCommon("loading")}</div> : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("tableReceiptNo")}</TableHead>
-                  <TableHead>{t("tableReference")}</TableHead>
-                  <TableHead className="text-right">{t("tableAmount")}</TableHead>
-                  <TableHead>{t("tableIssuedDate")}</TableHead>
-                  <TableHead>{t("tablePdf")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data?.results.map((r) => (
-                  <TableRow key={r.receipt_no}>
-                    <TableCell className="font-medium">{r.receipt_no}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {t(REFERENCE_TYPE_KEYS[r.reference_type] as any)}
-                      </Badge>
-                      <span className="ml-2 text-muted-foreground">#{r.reference_id}</span>
-                    </TableCell>
-                    <TableCell className="text-right">{r.amount}</TableCell>
-                    <TableCell>{formatDate(r.issued_date)}</TableCell>
-                    <TableCell>
-                      {r.pdf_file ? (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={r.pdf_file} target="_blank" rel="noopener noreferrer">{t("viewPdf")}</a>
-                        </Button>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("tableReceiptNo")}</TableHead>
+                    <TableHead>{t("tableReference")}</TableHead>
+                    <TableHead className="text-right">{t("tableAmount")}</TableHead>
+                    <TableHead>{t("tableIssuedDate")}</TableHead>
+                    <TableHead>{t("tablePdf")}</TableHead>
                   </TableRow>
-                ))}
-                {(!data?.results || data.results.length === 0) && (
-                  <TableRow><TableCell colSpan={5} className="text-center py-6 text-muted-foreground">{t("empty")}</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {data?.results.map((r) => (
+                    <TableRow key={r.receipt_no}>
+                      <TableCell className="font-medium">{r.receipt_no}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {t(REFERENCE_TYPE_KEYS[r.reference_type] as any)}
+                        </Badge>
+                        <span className="ml-2 text-muted-foreground">#{r.reference_id}</span>
+                      </TableCell>
+                      <TableCell className="text-right">{r.amount}</TableCell>
+                      <TableCell>{formatDate(r.issued_date)}</TableCell>
+                      <TableCell>
+                        {r.pdf_file ? (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={r.pdf_file} target="_blank" rel="noopener noreferrer">{t("viewPdf")}</a>
+                          </Button>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {(!data?.results || data.results.length === 0) && (
+                    <TableRow><TableCell colSpan={5} className="text-center py-6 text-muted-foreground">{t("empty")}</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+
+              {total > 0 && (
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t("showing", {
+                      from: offset + 1,
+                      to: Math.min(offset + PAGE_SIZE, total),
+                      total,
+                    })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      {tCommon("previous")}
+                    </Button>
+                    <span className="text-sm">
+                      {t("pageOf", { page, totalPages })}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={page >= totalPages}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      {tCommon("next")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
